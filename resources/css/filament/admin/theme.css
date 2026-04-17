@@ -1,0 +1,45 @@
+@import 'tailwindcss';
+
+/* Scan all Filament vendor packages so Tailwind v4 generates their utility classes */
+@source '../../../../vendor/filament';
+@source '../../../views/**/*.blade.php';
+
+/* ── Auto2000 HC Brand Tokens ─────────────────────────── */
+:root {
+  --primary-navy:   #1A3A5C;
+  --primary-red:    #C8102E;
+  --accent-teal:    #0D7377;
+
+  /* Data visualization */
+  --data-green:     #1B7A4E;
+  --data-amber:     #D97706;
+  --data-red:       #DC2626;
+  --data-blue:      #1D4ED8;
+  --data-gray:      #6B7280;
+
+  /* Surface tokens */
+  --surface-page:   #F0F4F8;
+  --surface-card:   #FFFFFF;
+  --surface-sidebar:#1A3A5C;
+
+  /* Competency level colors */
+  --level-lulus:    #1B7A4E;
+  --level-progress: #D97706;
+  --level-belum:    #6B7280;
+  --level-critical: #DC2626;
+}
+
+@theme {
+  --color-brand-navy: var(--primary-navy);
+  --color-brand-red: var(--primary-red);
+  --color-brand-teal: var(--accent-teal);
+  
+  --color-data-green: var(--data-green);
+  --color-data-amber: var(--data-amber);
+  --color-data-red: var(--data-red);
+  --color-data-blue: var(--data-blue);
+  
+  --color-level-lulus: var(--level-lulus);
+  --color-level-progress: var(--level-progress);
+  --color-level-belum: var(--level-belum);
+}
