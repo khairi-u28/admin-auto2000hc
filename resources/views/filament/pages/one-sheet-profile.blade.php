@@ -40,10 +40,10 @@
                 <div style="flex-grow: 1;">
                     <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
                         <h2 style="font-size: 2rem; font-weight: 800; line-height: 1.1; color: var(--text-title); margin: 0;">
-                            {{ $this->employee->full_name }}
+                            {{ $this->employee->nama_lengkap }}
                         </h2>
                         <x-filament::badge :color="$this->employee->status === 'active' ? 'success' : 'danger'" size="sm">
-                            {{ $this->employee->status === 'active' ? 'Aktif' : 'Tidak Aktif' }}
+                            {{ $this->employee->status === 'active' ? 'aktif' : 'non_aktif' }}
                         </x-filament::badge>
                     </div>
                     
@@ -69,9 +69,9 @@
                         <div style="display: flex; flex-direction: column; gap: 0.875rem;">
                             @foreach([
                                 'Jabatan' => $this->employee->jobRole?->name,
-                                'Cabang' => $this->employee->branch?->name,
-                                'Area' => $this->employee->area,
-                                'Region' => $this->employee->region,
+                                'Cabang' => $this->employee->branch?->nama ?? $this->employee->branch?->name,
+                                'Area' => $this->employee->branch?->areaRelation?->nama_area ?? $this->employee->area,
+                                'Region' => $this->employee->branch?->regionRelation?->nama_region ?? $this->employee->region,
                             ] as $label => $val)
                                 <div style="display: flex; justify-content: space-between; font-size: 0.875rem; padding-bottom: 0.625rem; border-bottom: 1px solid var(--border-item);">
                                     <span style="color: var(--text-dim); font-weight: 700; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.025em;">{{ $label }}</span>

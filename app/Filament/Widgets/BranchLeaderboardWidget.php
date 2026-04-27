@@ -7,6 +7,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 class BranchLeaderboardWidget extends TableWidget
 {
@@ -27,7 +28,7 @@ class BranchLeaderboardWidget extends TableWidget
                     );
                 },
             ])
-            ->orderByDesc('completed_enrollments_count');
+            ->orderByRaw('IF(employees_count = 0, 0, completed_enrollments_count / employees_count) DESC');
     }
 
     public function table(Table $table): Table
@@ -35,11 +36,37 @@ class BranchLeaderboardWidget extends TableWidget
         return $table
             ->query($this->getTableQuery())
             ->columns([
+                TextColumn::make('rank')
+                    ->label('Rank')
+                    ->getStateUsing(function (Branch $record) {
+                        static $ordered = null;
+
+                        if ($ordered === null) {
+                            $ordered = Branch::query()
+                                ->withCount(['employees', 'employees as completed_enrollments_count' => function ($q) { $q->whereHas('enrollments', fn($q)=> $q->where('status','completed')); }])
+                                ->get()
+                                ->sortByDesc(function ($b) { return $b->employees_count ? ($b->completed_enrollments_count / $b->employees_count) : 0; })
+                                ->pluck('id')
+                                ->toArray();
+                        }
+
+                        $idx = array_search($record->id, $ordered);
+                        $rank = ($idx === false) ? '?' : $idx + 1;
+
+                        return match ($rank) {
+                            1 => "🥇 #1",
+                            2 => "🥈 #2",
+                            3 => "🥉 #3",
+                            default => "#{$rank}",
+                        };
+                    }),
                 TextColumn::make('name')
                     ->label('Cabang')
                     ->searchable(),
                 TextColumn::make('region')
                     ->label('Region'),
+                TextColumn::make('area')
+                    ->label('Area'),
                 TextColumn::make('type')
                     ->label('Tipe')
                     ->badge()
@@ -53,7 +80,7 @@ class BranchLeaderboardWidget extends TableWidget
                     ->label('Jml. Karyawan')
                     ->sortable(),
                 TextColumn::make('completed_enrollments_count')
-                    ->label('Karyawan Selesai Enrollment')
+                    ->label('Selesai Enrollment')
                     ->sortable(),
                 TextColumn::make('completion_pct')
                     ->label('% Selesai')
@@ -68,6 +95,13 @@ class BranchLeaderboardWidget extends TableWidget
                         return $query->orderByRaw(
                             'IF(employees_count = 0, 0, completed_enrollments_count / employees_count) ' . $direction
                         );
+                    }),
+                TextColumn::make('sparkline')
+                    ->label('')
+                    ->getStateUsing(function (Branch $record) {
+                        if ($record->employees_count === 0) return '';
+                        $pct = round(($record->completed_enrollments_count / $record->employees_count) * 10); // scale 0-10
+                        return str_repeat('▮', $pct) . str_repeat('▯', 10 - $pct);
                     }),
             ])
             ->paginated([10, 25, 50]);

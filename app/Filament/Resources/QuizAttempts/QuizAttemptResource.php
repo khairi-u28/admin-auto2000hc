@@ -18,7 +18,7 @@ class QuizAttemptResource extends Resource
 {
     protected static ?string $model = QuizAttempt::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPencilSquare;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-pencil-square';
 
     protected static ?int $navigationSort = 2;
 

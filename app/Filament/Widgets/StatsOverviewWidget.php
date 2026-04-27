@@ -6,9 +6,9 @@ use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\Enrollment;
 use App\Models\TrainingRecord;
-use Filament\Schemas\Schema;
 use Filament\Widgets\StatsOverviewWidget as BaseStatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Carbon\Carbon;
 
 class StatsOverviewWidget extends BaseStatsOverviewWidget
 {
@@ -16,25 +16,41 @@ class StatsOverviewWidget extends BaseStatsOverviewWidget
 
     protected static ?int $sort = 1;
 
-    public function content(Schema $schema): Schema
+    protected function getStats(): array
     {
-        $totalEmployees     = Employee::where('status', 'active')->count();
-        $branchCount        = Branch::count();
-        $enrollmentOngoing  = Enrollment::whereIn('status', ['in_progress', 'not_started'])->count();
-        $enrollmentDone     = Enrollment::where('status', 'completed')->count();
-        $totalEnrollments   = Enrollment::count();
-        $completionRate     = $totalEnrollments > 0
+        $totalEmployees       = Employee::where('status', 'active')->count();
+        $enrollmentAktif      = Enrollment::whereIn('status', ['not_started', 'in_progress'])->count();
+        $enrollmentDone       = Enrollment::where('status', 'completed')->count();
+        $totalEnrollments     = Enrollment::count();
+        $completionRate       = $totalEnrollments > 0
             ? round(($enrollmentDone / $totalEnrollments) * 100, 1)
             : 0;
         $totalTrainingRecords = TrainingRecord::count();
+        $branchCount          = Branch::count();
 
-        return $schema->components([
-            Stat::make('Karyawan Aktif', number_format($totalEmployees))
+        // Cabang teraktif bulan ini (by enrollment completions)
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $endOfMonth = Carbon::now()->endOfMonth();
+
+        $topBranch = Enrollment::query()
+            ->where('enrollments.status', 'completed')
+            ->whereBetween('enrollments.completed_at', [$startOfMonth, $endOfMonth])
+            ->join('employees', 'enrollments.employee_id', '=', 'employees.id')
+            ->join('branches', 'employees.branch_id', '=', 'branches.id')
+            ->selectRaw('branches.id, branches.name, COUNT(*) as completions')
+            ->groupBy('branches.id', 'branches.name')
+            ->orderByDesc('completions')
+            ->first();
+
+        $topBranchLabel = $topBranch ? "{$topBranch->name} ({$topBranch->completions})" : '-';
+
+        return [
+            Stat::make('Total Karyawan Aktif', number_format($totalEmployees))
                 ->description('Total karyawan aktif')
                 ->descriptionIcon('heroicon-m-users')
                 ->color('primary'),
 
-            Stat::make('Enrollment Aktif', number_format($enrollmentOngoing))
+            Stat::make('Enrollment Aktif', number_format($enrollmentAktif))
                 ->description('Sedang berjalan / belum dimulai')
                 ->descriptionIcon('heroicon-m-academic-cap')
                 ->color('warning'),
@@ -48,6 +64,11 @@ class StatsOverviewWidget extends BaseStatsOverviewWidget
                 ->description("Dari {$branchCount} cabang")
                 ->descriptionIcon('heroicon-m-clipboard-document-list')
                 ->color('info'),
-        ]);
+
+            Stat::make('Cabang Teraktif Bulan Ini', $topBranchLabel)
+                ->description('Cabang dengan penyelesaian terbanyak bulan ini')
+                ->descriptionIcon('heroicon-m-building-office')
+                ->color('primary'),
+        ];
     }
 }

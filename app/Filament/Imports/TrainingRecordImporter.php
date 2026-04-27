@@ -7,6 +7,7 @@ use App\Models\Employee;
 use App\Models\TrainingRecord;
 use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Importer;
+use Carbon\Carbon;
 use Filament\Actions\Imports\Models\Import;
 use Illuminate\Support\Facades\Auth;
 
@@ -40,8 +41,30 @@ class TrainingRecordImporter extends Importer
                 ->numeric()
                 ->rules(['required', 'integer', 'between:0,3']),
             ImportColumn::make('completion_date')
-                ->label('Tanggal Selesai (YYYY-MM-DD)')
-                ->rules(['required', 'date']),
+                ->label('Tanggal Selesai (YYYY-MM-DD atau DD/MM/YYYY)')
+                ->rules(['required', 'date_format:Y-m-d,d/m/Y'])
+                ->fillRecordUsing(function (TrainingRecord $record, string $state): void {
+                    // Normalize incoming date formats to Y-m-d
+                    $date = null;
+                    if (str_contains($state, '/')) {
+                        // Expecting d/m/Y
+                        try {
+                            $date = Carbon::createFromFormat('d/m/Y', $state);
+                        } catch (\Exception $e) {
+                            $date = null;
+                        }
+                    } else {
+                        try {
+                            $date = Carbon::createFromFormat('Y-m-d', $state);
+                        } catch (\Exception $e) {
+                            $date = null;
+                        }
+                    }
+
+                    if ($date) {
+                        $record->completion_date = $date->format('Y-m-d');
+                    }
+                }),
             ImportColumn::make('certification_number')
                 ->label('No. Sertifikat')
                 ->rules(['nullable', 'max:100']),

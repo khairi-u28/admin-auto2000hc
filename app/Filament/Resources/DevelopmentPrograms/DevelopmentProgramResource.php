@@ -18,7 +18,7 @@ class DevelopmentProgramResource extends Resource
 {
     protected static ?string $model = DevelopmentProgram::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-presentation-chart-bar';
 
     protected static ?int $navigationSort = 6;
 

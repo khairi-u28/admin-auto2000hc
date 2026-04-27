@@ -19,7 +19,7 @@ class CurriculumResource extends Resource
 {
     protected static ?string $model = Curriculum::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
     protected static ?int $navigationSort = 3;
 
@@ -29,7 +29,7 @@ class CurriculumResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Manajemen Konten';
+        return 'Kurikulum & Materi';
     }
 
     public static function form(Schema $schema): Schema

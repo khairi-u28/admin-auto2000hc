@@ -19,7 +19,7 @@ class TrainingRecordResource extends Resource
 {
     protected static ?string $model = TrainingRecord::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
 
     protected static ?int $navigationSort = 5;
 

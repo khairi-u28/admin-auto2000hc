@@ -20,7 +20,7 @@ class EmployeeResource extends Resource
 {
     protected static ?string $model = Employee::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-users';
 
     protected static ?int $navigationSort = 4;
 
@@ -28,7 +28,7 @@ class EmployeeResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Karyawan';
 
-    protected static ?string $recordTitleAttribute = 'full_name';
+    protected static ?string $recordTitleAttribute = 'nama_lengkap';
 
     public static function getNavigationGroup(): ?string
     {
@@ -37,14 +37,14 @@ class EmployeeResource extends Resource
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['nrp', 'full_name'];
+        return ['nrp', 'nama_lengkap', 'full_name'];
     }
 
     public static function getGlobalSearchResultDetails(\Illuminate\Database\Eloquent\Model $record): array
     {
         return [
             'NRP'    => $record->nrp,
-            'Cabang' => $record->branch?->name,
+            'Cabang' => $record->branch?->nama ?? $record->branch?->name,
         ];
     }
 

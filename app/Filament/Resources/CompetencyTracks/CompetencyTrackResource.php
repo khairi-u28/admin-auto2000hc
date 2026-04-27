@@ -18,7 +18,7 @@ class CompetencyTrackResource extends Resource
 {
     protected static ?string $model = CompetencyTrack::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-academic-cap';
 
     protected static ?int $navigationSort = 3;
 
@@ -28,7 +28,7 @@ class CompetencyTrackResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Master Data';
+        return 'Konfigurasi';
     }
 
     public static function form(Schema $schema): Schema

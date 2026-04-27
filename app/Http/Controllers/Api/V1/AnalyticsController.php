@@ -80,25 +80,26 @@ class AnalyticsController extends Controller
     {
         $rows = DB::table('role_competency_requirements as req')
             ->join('job_roles', 'req.job_role_id', '=', 'job_roles.id')
-            ->join('competencies', 'req.competency_id', '=', 'competencies.id')
+            ->join('competency_tracks as ct', 'req.competency_track_id', '=', 'ct.id')
             ->leftJoin('employees', 'employees.job_role_id', '=', 'job_roles.id')
-            ->leftJoin('training_records', function ($join) {
-                $join->on('training_records.employee_id', '=', 'employees.id')
-                     ->on('training_records.competency_id', '=', 'req.competency_id');
+            ->leftJoin('training_records as tr', function ($join) {
+                $join->on('tr.employee_id', '=', 'employees.id')
+                     ->on('tr.competency_track_id', '=', 'req.competency_track_id');
             })
             ->select(
                 'job_roles.id as job_role_id',
                 'job_roles.name as job_role',
-                'competencies.id as competency_id',
-                'competencies.name as competency',
-                'competencies.code as competency_code',
+                'ct.id as competency_track_id',
+                'ct.name as competency',
+                'ct.code as competency_code',
                 'req.required_level',
                 DB::raw('COUNT(DISTINCT employees.id) as total_employees'),
-                DB::raw('SUM(CASE WHEN training_records.level_achieved >= req.required_level THEN 1 ELSE 0 END) as employees_met'),
-                DB::raw('SUM(CASE WHEN training_records.level_achieved IS NULL OR training_records.level_achieved < req.required_level THEN 1 ELSE 0 END) as employees_gap')
+                DB::raw('SUM(CASE WHEN tr.level_achieved >= req.required_level THEN 1 ELSE 0 END) as employees_met'),
+                DB::raw('SUM(CASE WHEN tr.level_achieved IS NULL OR tr.level_achieved < req.required_level THEN 1 ELSE 0 END) as employees_gap')
             )
+            ->whereNotNull('employees.id')
             ->where('employees.status', 'active')
-            ->groupBy('req.job_role_id', 'req.competency_id', 'job_roles.id', 'job_roles.name', 'competencies.id', 'competencies.name', 'competencies.code', 'req.required_level')
+            ->groupBy('job_roles.id', 'job_roles.name', 'ct.id', 'ct.name', 'ct.code', 'req.required_level')
             ->orderBy('employees_gap', 'desc')
             ->get();
 

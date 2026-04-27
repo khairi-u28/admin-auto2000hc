@@ -29,6 +29,126 @@
   --level-critical: #DC2626;
 }
 
+/* Collapsible sidebar styles for desktop (Filament: sidebarCollapsibleOnDesktop) */
+/* Target multiple possible collapsed selectors to be robust across Filament versions */
+:root {
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 72px;
+}
+
+.filament-sidebar,
+[data-sidebar-collapsed="false"] .filament-sidebar {
+  background-color: var(--surface-sidebar) !important;
+}
+
+.filament-sidebar-collapsed,
+.filament-sidebar--collapsed,
+[data-sidebar-collapsed="true"] .filament-sidebar {
+  width: var(--sidebar-collapsed-width) !important;
+  min-width: var(--sidebar-collapsed-width) !important;
+  max-width: var(--sidebar-collapsed-width) !important;
+}
+
+/* Hide labels and descriptions when collapsed, keep icons visible */
+.filament-sidebar-collapsed .filament-nav-item-label,
+.filament-sidebar--collapsed .filament-nav-item-label,
+[data-sidebar-collapsed="true"] .filament-nav-item-label {
+  display: none !important;
+}
+
+.filament-sidebar-collapsed .filament-nav-item-description,
+.filament-sidebar--collapsed .filament-nav-item-description,
+[data-sidebar-collapsed="true"] .filament-nav-item-description {
+  display: none !important;
+}
+
+/* Ensure icons are centered vertically when collapsed */
+.filament-sidebar-collapsed .filament-nav-item,
+.filament-sidebar--collapsed .filament-nav-item,
+[data-sidebar-collapsed="true"] .filament-nav-item {
+  justify-content: center !important;
+}
+
+/* Brand: show full name normally, shorten to RK circle when collapsed */
+.filament-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filament-brand .brand-full {
+  color: #fff;
+  font-weight: 600;
+}
+
+.filament-brand .brand-short {
+  display: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  background-color: #ffffff10;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.filament-sidebar-collapsed .filament-brand .brand-full,
+.filament-sidebar--collapsed .filament-brand .brand-full,
+[data-sidebar-collapsed="true"] .filament-brand .brand-full {
+  display: none !important;
+}
+
+.filament-sidebar-collapsed .filament-brand .brand-short,
+.filament-sidebar--collapsed .filament-brand .brand-short,
+[data-sidebar-collapsed="true"] .filament-brand .brand-short {
+  display: inline-flex !important;
+}
+
+/* Toggle button visibility and contrast */
+.filament-sidebar .filament-toggle-collapse-button,
+.filament-toggle-collapse-button {
+  color: #fff;
+  background: transparent;
+  border: none;
+}
+
+/* Mobile: fully hide sidebar and use overlay behavior */
+@media (max-width: 1024px) {
+  .filament-sidebar {
+    transform: translateX(-100%);
+  }
+  .filament-sidebar[data-open="true"],
+  .filament-sidebar--open {
+    transform: translateX(0);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+}
+
+/* Ensure sidebar background and link contrast */
+.filament-sidebar a,
+.filament-sidebar .filament-nav-item {
+  color: #fff !important;
+}
+
+/* Keep collapsed state accessible: increase hit area for icons */
+.filament-sidebar-collapsed .filament-nav-item .filament-nav-item-icon,
+.filament-sidebar--collapsed .filament-nav-item .filament-nav-item-icon,
+[data-sidebar-collapsed="true"] .filament-nav-item .filament-nav-item-icon {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Decorative: subtle divider when expanded */
+.filament-sidebar .filament-nav-section-header {
+  border-left: 4px solid transparent;
+}
+
+
 @theme {
   --color-brand-navy: var(--primary-navy);
   --color-brand-red: var(--primary-red);

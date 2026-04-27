@@ -4,6 +4,8 @@ namespace App\Filament\Widgets;
 
 use App\Models\RoleCompetencyRequirement;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,6 +32,7 @@ class CompetencyGapWidget extends TableWidget
             ->select([
                 'role_competency_requirements.id',
                 'job_roles.name as job_role_name',
+                'job_roles.department as department',
                 'competency_tracks.name as competency_name',
                 'role_competency_requirements.minimum_level',
                 DB::raw('COUNT(DISTINCT employees.id) as total_employees'),
@@ -43,7 +46,7 @@ class CompetencyGapWidget extends TableWidget
                 'job_roles.name',
                 'competency_tracks.name',
             ])
-            ->orderByRaw('(total_employees - employees_met) DESC');
+                ->orderByRaw('(total_employees - employees_met) DESC');
     }
 
     public function table(Table $table): Table
@@ -71,6 +74,9 @@ class CompetencyGapWidget extends TableWidget
                         default => 'secondary',
                     })
                     ->formatStateUsing(fn (int $state): string => "Level {$state}"),
+                TextColumn::make('department')
+                    ->label('Departemen')
+                    ->badge(),
                 TextColumn::make('total_employees')
                     ->label('Jml. Karyawan'),
                 TextColumn::make('employees_met')
@@ -79,9 +85,14 @@ class CompetencyGapWidget extends TableWidget
                     ->label('Kesenjangan')
                     ->state(fn ($record): int => max(0, $record->total_employees - $record->employees_met))
                     ->color(fn ($record): string => ($record->total_employees - $record->employees_met) > 0 ? 'danger' : 'success'),
-                TextColumn::make('gap_pct')
+                BadgeColumn::make('gap_pct')
                     ->label('% Gap')
-                    ->state(function ($record): string {
+                    ->color(fn ($record): string =>
+                        ($record->total_employees === 0)
+                            ? 'secondary'
+                            : ((($record->total_employees - $record->employees_met) / max(1, $record->total_employees) * 100) > 50 ? 'danger' : (((($record->total_employees - $record->employees_met) / max(1, $record->total_employees) * 100) >= 20) ? 'warning' : 'success'))
+                    )
+                    ->formatStateUsing(function ($record) {
                         if ($record->total_employees === 0) {
                             return 'N/A';
                         }
@@ -89,6 +100,17 @@ class CompetencyGapWidget extends TableWidget
 
                         return round(($gap / $record->total_employees) * 100, 1) . '%';
                     }),
+            ])
+            ->filters([
+                SelectFilter::make('department')
+                    ->label('Departemen')
+                    ->options([
+                        'Sales' => 'Sales',
+                        'Aftersales' => 'Aftersales',
+                        'PD' => 'PD',
+                        'HC' => 'HC',
+                        'GS' => 'GS',
+                    ]),
             ])
             ->paginated([15, 30, 50]);
     }

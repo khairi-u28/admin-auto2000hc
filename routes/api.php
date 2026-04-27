@@ -51,5 +51,12 @@ Route::prefix('v1')->group(function () {
         Route::get('analytics/overview',                 [AnalyticsController::class, 'overview']);
         Route::get('analytics/completion-by-department', [AnalyticsController::class, 'completionByDepartment']);
         Route::get('analytics/competency-gap',           [AnalyticsController::class, 'competencyGap']);
+
+        // Sesi management (Task 4)
+        Route::get('sesis', [\App\Http\Controllers\Api\V1\SesiController::class, 'index']);
+        Route::get('sesis/{sesi}', [\App\Http\Controllers\Api\V1\SesiController::class, 'show']);
+        Route::post('sesis', [\App\Http\Controllers\Api\V1\SesiController::class, 'store']);
+        Route::put('sesis/{sesi}', [\App\Http\Controllers\Api\V1\SesiController::class, 'update']);
+        Route::delete('sesis/{sesi}', [\App\Http\Controllers\Api\V1\SesiController::class, 'destroy']);
     });
 });

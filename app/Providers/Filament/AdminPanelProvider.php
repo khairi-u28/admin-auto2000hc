@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use Filament\Navigation\NavigationGroup;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -25,6 +26,7 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
+            ->sidebarCollapsibleOnDesktop()
             ->id('admin')
             ->path('admin')
             ->login()
@@ -37,11 +39,10 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->brandName('Ruang Kompetensi')
             ->navigationGroups([
-                'Master Data',
-                'Manajemen Konten',
-                'Enrollment & Operasional',
-                'Analitik',
-                'Sistem',
+                NavigationGroup::make('Master Data')->icon('heroicon-o-circle-stack'),
+                NavigationGroup::make('Kurikulum & Materi')->icon('heroicon-o-book-open'),
+                NavigationGroup::make('Enrollment & Operasional')->icon('heroicon-o-academic-cap'),
+                NavigationGroup::make('Laporan')->icon('heroicon-o-presentation-chart-bar'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
@@ -50,8 +51,12 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
+                \App\Filament\Widgets\StatsOverviewWidget::class,
+                \App\Filament\Widgets\DepartmentCompletionChartWidget::class,
+                \App\Filament\Widgets\CompetencyDistributionWidget::class,
+                \App\Filament\Widgets\RegionHeatmapWidget::class,
+                \App\Filament\Widgets\CompetencyGapWidget::class,
+                \App\Filament\Widgets\BranchLeaderboardWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

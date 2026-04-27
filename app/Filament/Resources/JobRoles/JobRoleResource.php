@@ -19,7 +19,7 @@ class JobRoleResource extends Resource
 {
     protected static ?string $model = JobRole::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBriefcase;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-briefcase';
 
     protected static ?int $navigationSort = 2;
 
@@ -29,7 +29,7 @@ class JobRoleResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Master Data';
+        return 'Konfigurasi';
     }
 
     public static function form(Schema $schema): Schema

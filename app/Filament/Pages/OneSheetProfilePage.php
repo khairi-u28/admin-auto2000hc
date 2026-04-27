@@ -27,7 +27,7 @@ class OneSheetProfilePage extends Page
 
     public function getTitle(): string
     {
-        return "One Sheet: {$this->employee->full_name}";
+        return "One Sheet: {$this->employee->nama_lengkap}";
     }
 
     public function getView(): string

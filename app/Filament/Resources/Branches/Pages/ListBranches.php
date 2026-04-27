@@ -2,10 +2,11 @@
 
 namespace App\Filament\Resources\Branches\Pages;
 
-use App\Filament\Imports\BranchImporter;
 use App\Filament\Resources\Branches\BranchResource;
-use Filament\Actions\ImportAction;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 class ListBranches extends ListRecords
 {
@@ -14,9 +15,14 @@ class ListBranches extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            ImportAction::make()
-                ->importer(BranchImporter::class)
-                ->label('Import dari CSV'),
+            CreateAction::make()
+                ->label('Tambah Cabang'),
         ];
+    }
+
+    public function getTableQuery(): Builder|Relation|null
+    {
+        // Eagerly load employee count to avoid N+1 queries
+        return parent::getTableQuery()->withCount('employees');
     }
 }
