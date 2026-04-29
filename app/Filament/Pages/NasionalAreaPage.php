@@ -38,6 +38,7 @@ class NasionalAreaPage extends Page implements HasTable
     {
         return $table
             ->query($this->getTableQuery())
+            ->defaultKeySort(false)
             ->columns([
                 TextColumn::make('branch_name')->label('Cabang')->searchable()->sortable(),
                 TextColumn::make('jumlah_karyawan')->label('Jumlah Karyawan')->sortable(),

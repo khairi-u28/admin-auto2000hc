@@ -124,8 +124,7 @@ class NasionalPage extends Page implements HasTable
             )
             ->leftJoin('enrollments', 'enrollments.employee_id', '=', 'employees.id')
             ->whereNotNull('employees.region')
-            ->groupBy('employees.region')
-            ->orderBy('employees.region', 'asc');
+            ->groupBy('employees.region');
     }
 
     public function table(Table $table): Table

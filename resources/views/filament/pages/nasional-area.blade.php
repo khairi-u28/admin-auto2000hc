@@ -1,8 +1,8 @@
-@extends('filament::page')
-
-@section('content')
-@php($area = urldecode(request()->route('area') ?? request()->get('area')))
-@php($region = urldecode(request()->get('region') ?? request()->route('region')))
+<x-filament-panels::page>
+@php
+    $area = urldecode(request()->route('area') ?? request()->get('area'));
+    $region = urldecode(request()->get('region') ?? request()->route('region'));
+@endphp
 <div class="space-y-4">
   <div class="flex items-center justify-between">
     <h2 class="text-lg font-semibold">Ringkasan Area {{ $area }}</h2>
@@ -54,4 +54,4 @@
     </div>
   </div>
 </div>
-@endsection
+</x-filament-panels::page>

@@ -1,5 +1,7 @@
 <x-filament-panels::page>
-@php($region = urldecode(request()->route('region') ?? request()->get('region')))
+@php
+    $region = urldecode(request()->route('region') ?? request()->get('region'));
+@endphp
 <div class="space-y-4">
   <div class="flex items-center justify-between">
     <h2 class="text-xl font-bold text-gray-900 dark:text-white">Statistik Region: {{ $region }}</h2>
