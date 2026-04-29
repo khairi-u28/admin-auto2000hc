@@ -27,9 +27,9 @@ class Module extends Model
                     ->withPivot('id', 'order_index', 'is_mandatory');
     }
 
-    public function curricula(): BelongsToMany
+    public function competencies(): BelongsToMany
     {
-        return $this->belongsToMany(Curriculum::class, 'curriculum_modules')
-                    ->withPivot('order_index', 'is_mandatory');
+        return $this->belongsToMany(Competency::class, 'competency_modules')
+                    ->withPivot('id', 'order_index', 'is_mandatory');
     }
 }

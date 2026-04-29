@@ -459,5 +459,34 @@ class EmployeeSeeder extends Seeder
         foreach ($employees as $data) {
             Employee::firstOrCreate(['nrp' => $data['nrp']], $data);
         }
+
+        // Generate 200 more random employees
+        $faker = \Faker\Factory::create('id_ID');
+        $branches = Branch::all();
+        $roles = JobRole::all();
+        $areas = ['DKI1', 'DKI2', 'JABAR', 'JATIM', 'SUMATERA', 'KALIMANTAN'];
+        $regions = ['DKI JABAR PRIME FLEET', 'JATKALBAL', 'SUMATERA'];
+
+        for ($i = 0; $i < 200; $i++) {
+            $branch = $branches->random();
+            $role = $roles->random();
+            $area = $faker->randomElement($areas);
+            $region = $faker->randomElement($regions);
+
+            Employee::create([
+                'nrp' => (string)$faker->unique()->numberBetween(100000, 999999),
+                'full_name' => $faker->name,
+                'position_name' => $role->name,
+                'job_role_id' => $role->id,
+                'branch_id' => $branch->id,
+                'area' => $area,
+                'region' => $region,
+                'employee_type' => $faker->randomElement(['VSP', 'BP', 'HO']),
+                'entry_date' => $faker->date(),
+                'date_of_birth' => $faker->date(),
+                'status' => 'active',
+                'italent_user' => (string)$faker->unique()->numberBetween(100000, 999999),
+            ]);
+        }
     }
 }

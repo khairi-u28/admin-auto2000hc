@@ -89,6 +89,11 @@ class Employee extends Model
         return $this->hasMany(Enrollment::class);
     }
 
+    public function batchParticipants(): HasMany
+    {
+        return $this->hasMany(BatchParticipant::class);
+    }
+
     public function getNamaLengkapAttribute(): ?string
     {
         return $this->attributes['nama_lengkap'] ?? $this->attributes['full_name'] ?? null;

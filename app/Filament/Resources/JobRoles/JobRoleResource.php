@@ -29,7 +29,7 @@ class JobRoleResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Konfigurasi';
+        return 'Master Data';
     }
 
     public static function form(Schema $schema): Schema

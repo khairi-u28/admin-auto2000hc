@@ -5,10 +5,12 @@ namespace App\Filament\Resources\Employees;
 use App\Filament\Resources\Employees\Pages\CreateEmployee;
 use App\Filament\Resources\Employees\Pages\EditEmployee;
 use App\Filament\Resources\Employees\Pages\ListEmployees;
-use App\Filament\Resources\Employees\RelationManagers\DevelopmentProgramsRelationManager;
-use App\Filament\Resources\Employees\RelationManagers\TrainingRecordsRelationManager;
 use App\Filament\Resources\Employees\Schemas\EmployeeForm;
 use App\Filament\Resources\Employees\Tables\EmployeesTable;
+use App\Filament\Resources\Employees\RelationManagers\TrainingRecordsRelationManager;
+use App\Filament\Resources\Employees\RelationManagers\DevelopmentProgramsRelationManager;
+use App\Filament\Resources\Employees\RelationManagers\BatchParticipantsRelationManager;
+use App\Filament\Resources\Employees\RelationManagers\SesiPesertaRelationManager;
 use App\Models\Employee;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -61,8 +63,10 @@ class EmployeeResource extends Resource
     public static function getRelations(): array
     {
         return [
+            BatchParticipantsRelationManager::class,
             TrainingRecordsRelationManager::class,
             DevelopmentProgramsRelationManager::class,
+            SesiPesertaRelationManager::class,
         ];
     }
 

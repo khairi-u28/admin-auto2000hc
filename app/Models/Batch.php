@@ -13,70 +13,89 @@ class Batch extends Model
     use HasUuids;
 
     protected $fillable = [
-        'kode_batch',
-        'nama_batch',
-        'curriculum_id',
-        'pic_employee_id',
+        'batch_code',
+        'name',
+        'type',
+        'competency_id',
+        'branch_id',
+        'pic_id',
+        'start_date',
+        'end_date',
+        'target_participants',
         'status',
-        'active_from',
-        'active_until',
+        'evaluation_notes',
+        'created_by',
     ];
 
     protected function casts(): array
     {
         return [
-            'active_from' => 'date',
-            'active_until' => 'date',
+            'start_date' => 'date',
+            'end_date'   => 'date',
         ];
     }
 
-    public function curriculum(): BelongsTo
+    public function competency(): BelongsTo
     {
-        return $this->belongsTo(Curriculum::class);
+        return $this->belongsTo(Competency::class);
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
     }
 
     public function pic(): BelongsTo
     {
-        return $this->belongsTo(Employee::class, 'pic_employee_id');
+        return $this->belongsTo(User::class, 'pic_id');
     }
 
-    public function participants(): BelongsToMany
+    public function createdBy(): BelongsTo
     {
-        return $this->belongsToMany(Employee::class, 'batch_employee')
-            ->withPivot('role')
-            ->withTimestamps();
+        return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function peserta(): BelongsToMany
+    public function participants(): HasMany
     {
-        return $this->participants()->wherePivot('role', 'peserta');
+        return $this->hasMany(BatchParticipant::class);
     }
 
-    public function trainers(): BelongsToMany
+    public function materi(): HasMany
     {
-        return $this->participants()->wherePivot('role', 'trainer');
+        return $this->hasMany(BatchMateri::class)->orderBy('order_index');
     }
 
-    public function reviews(): HasMany
+    public function feedback(): HasMany
     {
-        return $this->hasMany(BatchReview::class);
+        return $this->hasMany(BatchFeedback::class);
     }
 
-    public function getCompletionRateAttribute(): float
+    public function participantProgress(): HasMany
     {
-        $participantIds = $this->peserta()->pluck('employees.id');
-        $totalParticipants = $participantIds->count();
+        return $this->hasMany(ParticipantMateriProgress::class);
+    }
 
-        if ($totalParticipants === 0) {
-            return 0.0;
+    /** Count of participants who have reached at least 'terdaftar' status */
+    public function getAktualPesertaAttribute(): int
+    {
+        return $this->participants()
+            ->whereNotIn('status', ['menunggu_undangan', 'diundang'])
+            ->count();
+    }
+
+    /** Generate next batch code: BATCH-{TYPE}-{YEAR}-{seq:003} */
+    public static function generateCode(string $type, int $year): string
+    {
+        $prefix = "BATCH-{$type}-{$year}-";
+        $lastSeq = static::where('batch_code', 'like', $prefix . '%')
+            ->orderBy('batch_code', 'desc')
+            ->value('batch_code');
+
+        $seq = 1;
+        if ($lastSeq) {
+            $seq = (int) substr($lastSeq, strlen($prefix)) + 1;
         }
 
-        $completedParticipants = Enrollment::query()
-            ->whereIn('employee_id', $participantIds)
-            ->where('status', 'completed')
-            ->distinct('employee_id')
-            ->count('employee_id');
-
-        return round(($completedParticipants / $totalParticipants) * 100, 2);
+        return $prefix . str_pad($seq, 3, '0', STR_PAD_LEFT);
     }
 }

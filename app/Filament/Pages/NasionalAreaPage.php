@@ -26,9 +26,9 @@ class NasionalAreaPage extends Page implements HasTable
         $area = urldecode(request()->route('area') ?? request()->get('area'));
 
         return Employee::query()
-            ->leftJoin('enrollments', 'enrollments.employee_id', '=', 'employees.id')
+            ->leftJoin('batch_participants', 'batch_participants.employee_id', '=', 'employees.id')
             ->leftJoin('branches', 'branches.id', '=', 'employees.branch_id')
-            ->selectRaw("employees.branch_id as branch_id, branches.name as branch_name, COUNT(employees.id) as jumlah_karyawan, SUM(CASE WHEN enrollments.status = 'completed' THEN 1 ELSE 0 END) as enrollment_selesai")
+            ->selectRaw("employees.branch_id as id, employees.branch_id as branch_id, branches.name as branch_name, COUNT(employees.id) as jumlah_karyawan, SUM(CASE WHEN batch_participants.status = 'lulus' THEN 1 ELSE 0 END) as training_selesai")
             ->where('employees.region', $region)
             ->where('employees.area', $area)
             ->groupBy('employees.branch_id', 'branches.name');
@@ -38,14 +38,15 @@ class NasionalAreaPage extends Page implements HasTable
     {
         return $table
             ->query($this->getTableQuery())
+
             ->defaultKeySort(false)
             ->columns([
                 TextColumn::make('branch_name')->label('Cabang')->searchable()->sortable(),
                 TextColumn::make('jumlah_karyawan')->label('Jumlah Karyawan')->sortable(),
-                TextColumn::make('enrollment_selesai')->label('Enrollment Selesai')->sortable(),
+                TextColumn::make('training_selesai')->label('training Selesai')->sortable(),
                 TextColumn::make('completion_pct')
                     ->label('% Selesai')
-                    ->getStateUsing(fn ($record) => $record->jumlah_karyawan ? round(($record->enrollment_selesai / $record->jumlah_karyawan) * 100,1) . '%' : '0%')
+                    ->getStateUsing(fn ($record) => $record->jumlah_karyawan ? round(($record->training_selesai / $record->jumlah_karyawan) * 100,1) . '%' : '0%')
                     ->sortable(),
             ])
             ->recordActions([
@@ -55,3 +56,7 @@ class NasionalAreaPage extends Page implements HasTable
             ]);
     }
 }
+
+
+
+

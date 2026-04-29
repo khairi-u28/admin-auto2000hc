@@ -20,7 +20,9 @@ class QuizAttemptResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-pencil-square';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 0;
+
+    protected static bool $shouldRegisterNavigation = false;
 
     protected static ?string $modelLabel = 'Percobaan Quiz';
 
@@ -28,7 +30,7 @@ class QuizAttemptResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Enrollment & Operasional';
+        return 'Operasional & Training';
     }
 
     public static function form(Schema $schema): Schema
@@ -55,3 +57,5 @@ class QuizAttemptResource extends Resource
         ];
     }
 }
+
+

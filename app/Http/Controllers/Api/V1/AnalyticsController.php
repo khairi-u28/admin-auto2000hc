@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
-use App\Models\Enrollment;
+use App\Models\BatchParticipant;
 use App\Models\TrainingRecord;
 use App\Models\RoleCompetencyRequirement;
 use Illuminate\Support\Facades\DB;
@@ -16,20 +16,20 @@ class AnalyticsController extends Controller
      */
     public function overview()
     {
-        $totalEmployees      = Employee::where('status', 'active')->count();
-        $activeEnrollments   = Enrollment::where('status', 'active')->count();
-        $completedEnrollments = Enrollment::where('status', 'completed')->count();
-        $totalEnrollments    = Enrollment::whereIn('status', ['active', 'completed'])->count();
-        $completionRate      = $totalEnrollments > 0
-            ? round(($completedEnrollments / $totalEnrollments) * 100, 1)
+        $totalEmployees      = Employee::where(['sedang_berjalan', 'selesai', 'lulus'])->count();
+        $activebatch_participants   = BatchParticipant::where(['sedang_berjalan', 'selesai', 'lulus'])->count();
+        $completedbatch_participants = BatchParticipant::where('status', 'lulus')->count();
+        $totalbatch_participants    = BatchParticipant::whereIn('status', ['sedang_berjalan', 'selesai', 'lulus'])->count();
+        $completionRate      = $totalbatch_participants > 0
+            ? round(($completedbatch_participants / $totalbatch_participants) * 100, 1)
             : 0;
         $trainingRecords     = TrainingRecord::count();
 
         return response()->json([
             'data' => [
                 'total_active_employees'    => $totalEmployees,
-                'active_enrollments'        => $activeEnrollments,
-                'completed_enrollments'     => $completedEnrollments,
+                'active_batch_participants'        => $activebatch_participants,
+                'completed_batch_participants'     => $completedbatch_participants,
                 'completion_rate_pct'       => $completionRate,
                 'total_training_records'    => $trainingRecords,
             ],
@@ -43,16 +43,16 @@ class AnalyticsController extends Controller
      */
     public function completionByDepartment()
     {
-        $rows = DB::table('enrollments')
-            ->join('curricula', 'enrollments.curriculum_id', '=', 'curricula.id')
+        $rows = DB::table('batch_participants')
+            ->join('employees', 'batch_participants.employee_id', '=', 'employees.id')->join('job_roles', 'employees.job_role_id', '=', 'job_roles.id')
             ->select(
-                'curricula.department',
+                'job_roles.department',
                 DB::raw('COUNT(*) as total'),
-                DB::raw("SUM(CASE WHEN enrollments.status = 'completed' THEN 1 ELSE 0 END) as completed")
+                DB::raw("SUM(CASE WHEN batch_participants.status = 'completed' THEN 1 ELSE 0 END) as completed")
             )
-            ->whereIn('enrollments.status', ['active', 'completed'])
-            ->whereNotNull('curricula.department')
-            ->groupBy('curricula.department')
+            ->whereIn('batch_participants.status', ['active', 'completed'])
+            ->whereNotNull('job_roles.department')
+            ->groupBy('job_roles.department')
             ->orderByDesc('total')
             ->get();
 
@@ -80,26 +80,26 @@ class AnalyticsController extends Controller
     {
         $rows = DB::table('role_competency_requirements as req')
             ->join('job_roles', 'req.job_role_id', '=', 'job_roles.id')
-            ->join('competency_tracks as ct', 'req.competency_track_id', '=', 'ct.id')
+            ->join('competencies as ct', 'req.competency_id', '=', 'ct.id')
             ->leftJoin('employees', 'employees.job_role_id', '=', 'job_roles.id')
             ->leftJoin('training_records as tr', function ($join) {
                 $join->on('tr.employee_id', '=', 'employees.id')
-                     ->on('tr.competency_track_id', '=', 'req.competency_track_id');
+                     ->on('tr.competency_id', '=', 'req.competency_id');
             })
             ->select(
                 'job_roles.id as job_role_id',
                 'job_roles.name as job_role',
-                'ct.id as competency_track_id',
+                'ct.id as competency_id',
                 'ct.name as competency',
                 'ct.code as competency_code',
-                'req.required_level',
+                'req.minimum_level',
                 DB::raw('COUNT(DISTINCT employees.id) as total_employees'),
-                DB::raw('SUM(CASE WHEN tr.level_achieved >= req.required_level THEN 1 ELSE 0 END) as employees_met'),
-                DB::raw('SUM(CASE WHEN tr.level_achieved IS NULL OR tr.level_achieved < req.required_level THEN 1 ELSE 0 END) as employees_gap')
+                DB::raw('SUM(CASE WHEN tr.level_achieved >= req.minimum_level THEN 1 ELSE 0 END) as employees_met'),
+                DB::raw('SUM(CASE WHEN tr.level_achieved IS NULL OR tr.level_achieved < req.minimum_level THEN 1 ELSE 0 END) as employees_gap')
             )
             ->whereNotNull('employees.id')
             ->where('employees.status', 'active')
-            ->groupBy('job_roles.id', 'job_roles.name', 'ct.id', 'ct.name', 'ct.code', 'req.required_level')
+            ->groupBy('job_roles.id', 'job_roles.name', 'ct.id', 'ct.name', 'ct.code', 'req.minimum_level')
             ->orderBy('employees_gap', 'desc')
             ->get();
 
@@ -110,3 +110,4 @@ class AnalyticsController extends Controller
         ]);
     }
 }
+

@@ -4,7 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Models\Branch;
 use App\Models\Employee;
-use App\Models\Enrollment;
+use App\Models\BatchParticipant;
 use App\Models\TrainingRecord;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
@@ -35,24 +35,24 @@ class NasionalPage extends Page implements HasTable
 
     public function getNationalStats(): array
     {
-        $totalEnrollments = Enrollment::count();
-        $completedEnrollments = Enrollment::where('status', 'completed')->count();
+        $totalTraining = BatchParticipant::count();
+        $completedTraining = BatchParticipant::where('status', 'lulus')->count();
 
         return [
             'total_karyawan_aktif' => Employee::where('status', 'active')->count(),
             'total_cabang' => Branch::count(),
-            'total_enrollment' => $totalEnrollments,
-            'completion_rate' => $totalEnrollments > 0 ? round(($completedEnrollments / $totalEnrollments) * 100, 1) : 0,
+            'total_training' => $totalTraining,
+            'completion_rate' => $totalTraining > 0 ? round(($completedTraining / $totalTraining) * 100, 1) : 0,
             'total_training_records' => TrainingRecord::count(),
         ];
     }
 
-    public function getEnrollmentStatusDistribution(): array
+    public function getTrainingStatusDistribution(): array
     {
-        $statuses = ['not_started', 'in_progress', 'completed', 'overdue'];
+        $statuses = ['menunggu_undangan', 'hadir', 'lulus', 'batal'];
 
         return collect($statuses)
-            ->mapWithKeys(fn (string $status) => [$status => Enrollment::where('status', $status)->count()])
+            ->mapWithKeys(fn (string $status) => [$status => BatchParticipant::where('status', $status)->count()])
             ->all();
     }
 
@@ -64,8 +64,8 @@ class NasionalPage extends Page implements HasTable
 
                 return [
                     'label' => $date->format('M Y'),
-                    'value' => Enrollment::query()
-                        ->where('status', 'completed')
+                    'value' => BatchParticipant::query()
+                        ->where('status', 'lulus')
                         ->whereYear('completed_at', $date->year)
                         ->whereMonth('completed_at', $date->month)
                         ->count(),
@@ -73,8 +73,8 @@ class NasionalPage extends Page implements HasTable
             })
             ->push([
                 'label' => now()->format('M Y'),
-                'value' => Enrollment::query()
-                    ->where('status', 'completed')
+                'value' => BatchParticipant::query()
+                    ->where('status', 'lulus')
                     ->whereYear('completed_at', now()->year)
                     ->whereMonth('completed_at', now()->month)
                     ->count(),
@@ -85,11 +85,11 @@ class NasionalPage extends Page implements HasTable
     public function getRegionCompletionData(): array
     {
         return Employee::query()
-            ->leftJoin('enrollments', 'enrollments.employee_id', '=', 'employees.id')
+            ->leftJoin('batch_participants', 'batch_participants.employee_id', '=', 'employees.id')
             ->selectRaw(implode(', ', [
                 'employees.region as region',
                 'COUNT(DISTINCT employees.id) as total_karyawan',
-                "COALESCE(SUM(CASE WHEN enrollments.status = 'completed' THEN 1 ELSE 0 END), 0) as completed_enrollments",
+                "COALESCE(SUM(CASE WHEN batch_participants.status = 'lulus' THEN 1 ELSE 0 END), 0) as completed_batch_participants",
             ]))
             ->whereNotNull('employees.region')
             ->groupBy('employees.region')
@@ -97,13 +97,13 @@ class NasionalPage extends Page implements HasTable
             ->get()
             ->map(function ($row): array {
                 $rate = $row->total_karyawan > 0
-                    ? round(($row->completed_enrollments / $row->total_karyawan) * 100, 1)
+                    ? round(($row->completed_batch_participants / $row->total_karyawan) * 100, 1)
                     : 0;
 
                 return [
                     'region' => $row->region,
                     'total_karyawan' => (int) $row->total_karyawan,
-                    'completed_enrollments' => (int) $row->completed_enrollments,
+                    'completed_batch_participants' => (int) $row->completed_batch_participants,
                     'rate' => $rate,
                 ];
             })
@@ -115,14 +115,15 @@ class NasionalPage extends Page implements HasTable
         return Employee::query()
             ->selectRaw(
                 implode(', ', [
+                    'employees.region as id',
                     'employees.region as region',
                     'COUNT(DISTINCT employees.area) as jumlah_area',
                     'COUNT(DISTINCT employees.branch_id) as jumlah_cabang',
                     'COUNT(DISTINCT employees.id) as jumlah_karyawan',
-                    "COALESCE(SUM(CASE WHEN enrollments.status = 'completed' THEN 1 ELSE 0 END), 0) as enrollment_selesai",
+                    "COALESCE(SUM(CASE WHEN batch_participants.status = 'lulus' THEN 1 ELSE 0 END), 0) as training_selesai",
                 ])
             )
-            ->leftJoin('enrollments', 'enrollments.employee_id', '=', 'employees.id')
+            ->leftJoin('batch_participants', 'batch_participants.employee_id', '=', 'employees.id')
             ->whereNotNull('employees.region')
             ->groupBy('employees.region');
     }
@@ -131,6 +132,7 @@ class NasionalPage extends Page implements HasTable
     {
         return $table
             ->query($this->getTableQuery())
+
             ->defaultSort('region', 'asc')
             ->defaultKeySort(false)
             ->columns([
@@ -138,10 +140,10 @@ class NasionalPage extends Page implements HasTable
                 TextColumn::make('jumlah_area')->label('Jumlah Area')->sortable(),
                 TextColumn::make('jumlah_cabang')->label('Jumlah Cabang')->sortable(),
                 TextColumn::make('jumlah_karyawan')->label('Jumlah Karyawan')->sortable(),
-                TextColumn::make('enrollment_selesai')->label('Enrollment Selesai')->sortable(),
+                TextColumn::make('training_selesai')->label('training Selesai')->sortable(),
                 TextColumn::make('completion_pct')
                     ->label('% Selesai')
-                    ->getStateUsing(fn ($record) => $record->jumlah_karyawan ? round(($record->enrollment_selesai / $record->jumlah_karyawan) * 100,1) . '%' : '0%'),
+                    ->getStateUsing(fn ($record) => $record->jumlah_karyawan ? round(($record->training_selesai / $record->jumlah_karyawan) * 100,1) . '%' : '0%'),
             ])
             ->filters([
                 SelectFilter::make('region')
@@ -156,3 +158,7 @@ class NasionalPage extends Page implements HasTable
             ]);
     }
 }
+
+
+
+

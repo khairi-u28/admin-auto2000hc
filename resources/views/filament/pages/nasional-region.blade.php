@@ -26,8 +26,8 @@
       <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ \App\Models\Employee::where('region',$region)->where('status','active')->count() }}</div>
     </div>
     <div class="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-100 dark:border-gray-700">
-      <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">Enrollment Selesai</div>
-      <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ \DB::table('enrollments')->join('employees','enrollments.employee_id','=','employees.id')->where('employees.region',$region)->where('enrollments.status','completed')->count() }}</div>
+      <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">training Selesai</div>
+      <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ \DB::table('trainings')->join('employees','trainings.employee_id','=','employees.id')->where('employees.region',$region)->where('trainings.status','lulus')->count() }}</div>
     </div>
     <div class="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-100 dark:border-gray-700">
       <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">Rata-rata Behavioral</div>
@@ -42,3 +42,5 @@
   </div>
 </div>
 </x-filament-panels::page>
+
+

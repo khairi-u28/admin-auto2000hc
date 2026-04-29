@@ -5,15 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TrainingRecord extends Model
 {
     use HasUuids;
 
     protected $fillable = [
-        'employee_id', 'competency_track_id', 'level_achieved',
-        'completion_date', 'certification_number', 'certification_expiry',
-        'notes', 'source', 'recorded_by',
+        'employee_id',
+        'competency_id',
+        'level_achieved',
+        'completion_date',
+        'certification_number',
+        'certification_expiry',
+        'notes',
+        'source',
+        'recorded_by',
     ];
 
     protected function casts(): array
@@ -21,7 +28,6 @@ class TrainingRecord extends Model
         return [
             'completion_date'    => 'date',
             'certification_expiry' => 'date',
-            'level_achieved'     => 'integer',
         ];
     }
 
@@ -30,9 +36,9 @@ class TrainingRecord extends Model
         return $this->belongsTo(Employee::class);
     }
 
-    public function competencyTrack(): BelongsTo
+    public function competency(): BelongsTo
     {
-        return $this->belongsTo(CompetencyTrack::class);
+        return $this->belongsTo(Competency::class);
     }
 
     public function recordedBy(): BelongsTo

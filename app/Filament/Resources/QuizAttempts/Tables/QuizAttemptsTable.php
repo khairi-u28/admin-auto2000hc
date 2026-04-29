@@ -16,11 +16,11 @@ class QuizAttemptsTable
     {
         return $table
             ->columns([
-                TextColumn::make('enrollment.employee.nrp')
+                TextColumn::make('batchParticipant.employee.nrp')
                     ->label('NRP')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('enrollment.employee.full_name')
+                TextColumn::make('batchParticipant.employee.full_name')
                     ->label('Nama Karyawan')
                     ->searchable()
                     ->sortable(),
@@ -56,3 +56,4 @@ class QuizAttemptsTable
             ]);
     }
 }
+

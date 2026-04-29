@@ -31,13 +31,15 @@ Route::prefix('v1')->group(function () {
         Route::get('employees/{employee}', [EmployeeController::class, 'show']);
         Route::put('employees/{employee}', [EmployeeController::class, 'update']);
 
-        // Curricula
-        Route::get('curricula',              [CurriculumController::class, 'index']);
-        Route::get('curricula/{curriculum}', [CurriculumController::class, 'show']);
+        // Courses & Modules
+        Route::apiResource('courses', CourseController::class)->only(['index', 'show']);
+        Route::apiResource('curricula', CurriculumController::class)->only(['index', 'show']);
 
-        // Courses
-        Route::get('courses',         [CourseController::class, 'index']);
-        Route::get('courses/{course}', [CourseController::class, 'show']);
+        // Batches
+        Route::apiResource('batches', \App\Http\Controllers\Api\V1\BatchController::class)->only(['index', 'show']);
+
+        // Sesi (Legacy)
+        Route::apiResource('sesis', SesiController::class);
 
         // Progress (enrollments)
         Route::get('progress',                     [ProgressController::class, 'index']);

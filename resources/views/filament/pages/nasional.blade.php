@@ -1,7 +1,7 @@
 <x-filament-panels::page>
   @php
     $stats = $this->getNationalStats();
-    $statusDistribution = $this->getEnrollmentStatusDistribution();
+    $statusDistribution = $this->getTrainingStatusDistribution();
     $monthlyTrend = $this->getMonthlyCompletionTrend();
     $regionCompletion = $this->getRegionCompletionData();
     $maxMonthly = max(array_column($monthlyTrend, 'value')) ?: 1;
@@ -17,8 +17,8 @@
         <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $stats['total_cabang'] }}</div>
       </div>
       <div class="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-100 dark:border-gray-700">
-        <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">Total Enrollment</div>
-        <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $stats['total_enrollment'] }}</div>
+        <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">Total training</div>
+        <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $stats['total_training'] }}</div>
       </div>
       <div class="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-100 dark:border-gray-700">
         <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">Completion Rate</div>
@@ -49,9 +49,9 @@
       </div>
 
       <div class="bg-white dark:bg-gray-800 p-6 rounded shadow border border-gray-100 dark:border-gray-700">
-        <div class="font-bold text-lg mb-4 text-gray-900 dark:text-white">Enrollment Status Distribution</div>
+        <div class="font-bold text-lg mb-4 text-gray-900 dark:text-white">training Status Distribution</div>
         <div class="space-y-3">
-          @foreach(['not_started' => 'Not Started', 'in_progress' => 'In Progress', 'completed' => 'Completed', 'overdue' => 'Overdue'] as $statusKey => $statusLabel)
+          @foreach(['menunggu_undangan' => 'Not Started', 'hadir' => 'In Progress', 'lulus' => 'lulus', 'batal' => 'batal'] as $statusKey => $statusLabel)
             <div class="flex items-center justify-between text-sm">
               <span class="text-gray-600 dark:text-gray-300">{{ $statusLabel }}</span>
               <span class="font-semibold text-gray-900 dark:text-white">{{ $statusDistribution[$statusKey] ?? 0 }}</span>
@@ -82,3 +82,5 @@
     </div>
   </div>
 </x-filament-panels::page>
+
+

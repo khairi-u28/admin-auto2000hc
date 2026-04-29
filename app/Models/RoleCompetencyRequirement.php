@@ -11,7 +11,7 @@ class RoleCompetencyRequirement extends Model
     use HasUuids;
 
     protected $fillable = [
-        'job_role_id', 'competency_track_id', 'is_mandatory', 'minimum_level',
+        'job_role_id', 'competency_id', 'is_mandatory', 'minimum_level',
     ];
 
     protected function casts(): array
@@ -27,8 +27,8 @@ class RoleCompetencyRequirement extends Model
         return $this->belongsTo(JobRole::class);
     }
 
-    public function competencyTrack(): BelongsTo
+    public function competency(): BelongsTo
     {
-        return $this->belongsTo(CompetencyTrack::class);
+        return $this->belongsTo(Competency::class);
     }
 }

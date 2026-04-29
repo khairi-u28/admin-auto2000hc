@@ -22,13 +22,13 @@ class BranchLeaderboardWidget extends TableWidget
         return Branch::query()
             ->withCount([
                 'employees',
-                'employees as completed_enrollments_count' => function (Builder $query) {
-                    $query->whereHas('enrollments', fn (Builder $q) =>
-                        $q->where('status', 'completed')
+                'employees as completed_batch_participants_count' => function (Builder $query) {
+                    $query->whereHas('batchParticipants', fn (Builder $q) =>
+                        $q->where('status', 'lulus')
                     );
                 },
             ])
-            ->orderByRaw('IF(employees_count = 0, 0, completed_enrollments_count / employees_count) DESC');
+            ->orderByRaw('IF(employees_count = 0, 0, completed_batch_participants_count / employees_count) DESC');
     }
 
     public function table(Table $table): Table
@@ -43,9 +43,9 @@ class BranchLeaderboardWidget extends TableWidget
 
                         if ($ordered === null) {
                             $ordered = Branch::query()
-                                ->withCount(['employees', 'employees as completed_enrollments_count' => function ($q) { $q->whereHas('enrollments', fn($q)=> $q->where('status','completed')); }])
+                                ->withCount(['employees', 'employees as completed_batch_participants_count' => function ($q) { $q->whereHas('batchParticipants', fn($q)=> $q->where('status', 'lulus')); }])
                                 ->get()
-                                ->sortByDesc(function ($b) { return $b->employees_count ? ($b->completed_enrollments_count / $b->employees_count) : 0; })
+                                ->sortByDesc(function ($b) { return $b->employees_count ? ($b->completed_batch_participants_count / $b->employees_count) : 0; })
                                 ->pluck('id')
                                 ->toArray();
                         }
@@ -79,8 +79,8 @@ class BranchLeaderboardWidget extends TableWidget
                 TextColumn::make('employees_count')
                     ->label('Jml. Karyawan')
                     ->sortable(),
-                TextColumn::make('completed_enrollments_count')
-                    ->label('Selesai Enrollment')
+                TextColumn::make('completed_batch_participants_count')
+                    ->label('Selesai training')
                     ->sortable(),
                 TextColumn::make('completion_pct')
                     ->label('% Selesai')
@@ -89,21 +89,22 @@ class BranchLeaderboardWidget extends TableWidget
                             return '0%';
                         }
 
-                        return round(($record->completed_enrollments_count / $record->employees_count) * 100, 1) . '%';
+                        return round(($record->completed_batch_participants_count / $record->employees_count) * 100, 1) . '%';
                     })
                     ->sortable(query: function (Builder $query, string $direction): Builder {
                         return $query->orderByRaw(
-                            'IF(employees_count = 0, 0, completed_enrollments_count / employees_count) ' . $direction
+                            'IF(employees_count = 0, 0, completed_batch_participants_count / employees_count) ' . $direction
                         );
                     }),
                 TextColumn::make('sparkline')
                     ->label('')
                     ->getStateUsing(function (Branch $record) {
                         if ($record->employees_count === 0) return '';
-                        $pct = round(($record->completed_enrollments_count / $record->employees_count) * 10); // scale 0-10
+                        $pct = round(($record->completed_batch_participants_count / $record->employees_count) * 10); // scale 0-10
                         return str_repeat('▮', $pct) . str_repeat('▯', 10 - $pct);
                     }),
             ])
             ->paginated([10, 25, 50]);
     }
 }
+

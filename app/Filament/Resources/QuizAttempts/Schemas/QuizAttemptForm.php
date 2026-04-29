@@ -17,9 +17,9 @@ class QuizAttemptForm
             Section::make('Data Percobaan Quiz')
                 ->columns(2)
                 ->components([
-                    Select::make('enrollment_id')
-                        ->label('Enrollment')
-                        ->relationship('enrollment', 'id')
+                    Select::make('batch_participant_id')
+                        ->label('Peserta Batch')
+                        ->relationship('batchParticipant', 'id')
                         ->getOptionLabelFromRecordUsing(
                             fn ($record) => "{$record->employee?->full_name} — {$record->curriculum?->title}"
                         )
@@ -51,3 +51,4 @@ class QuizAttemptForm
         ]);
     }
 }
+

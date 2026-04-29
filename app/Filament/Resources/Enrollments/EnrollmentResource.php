@@ -8,7 +8,7 @@ use App\Filament\Resources\Enrollments\Pages\ListEnrollments;
 use App\Filament\Resources\Enrollments\Schemas\EnrollmentForm;
 use App\Filament\Resources\Enrollments\Tables\EnrollmentsTable;
 use App\Filament\Resources\Enrollments\RelationManagers\QuizAttemptsRelationManager;
-use App\Models\Enrollment;
+use App\Models\BatchParticipant;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -17,19 +17,21 @@ use Filament\Tables\Table;
 
 class EnrollmentResource extends Resource
 {
-    protected static ?string $model = Enrollment::class;
+    protected static ?string $model = BatchParticipant::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 0;
 
-    protected static ?string $modelLabel = 'Enrollment';
+    protected static bool $shouldRegisterNavigation = false;
 
-    protected static ?string $pluralModelLabel = 'Enrollment';
+    protected static ?string $modelLabel = 'Peserta Batch';
+
+    protected static ?string $pluralModelLabel = 'Peserta Batch';
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Enrollment & Operasional';
+        return 'Operasional & Training';
     }
 
     public static function form(Schema $schema): Schema
@@ -58,3 +60,6 @@ class EnrollmentResource extends Resource
         ];
     }
 }
+
+
+

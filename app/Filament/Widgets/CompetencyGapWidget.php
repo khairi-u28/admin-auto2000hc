@@ -22,18 +22,18 @@ class CompetencyGapWidget extends TableWidget
     protected function getTableQuery(): Builder
     {
         return RoleCompetencyRequirement::query()
-            ->join('competency_tracks', 'role_competency_requirements.competency_track_id', '=', 'competency_tracks.id')
+            ->join('competencies', 'role_competency_requirements.competency_id', '=', 'competencies.id')
             ->join('job_roles', 'role_competency_requirements.job_role_id', '=', 'job_roles.id')
             ->leftJoin('employees', 'employees.job_role_id', '=', 'role_competency_requirements.job_role_id')
             ->leftJoin('training_records', function ($join) {
                 $join->on('training_records.employee_id', '=', 'employees.id')
-                    ->on('training_records.competency_track_id', '=', 'role_competency_requirements.competency_track_id');
+                    ->on('training_records.competency_id', '=', 'role_competency_requirements.competency_id');
             })
             ->select([
                 'role_competency_requirements.id',
                 'job_roles.name as job_role_name',
                 'job_roles.department as department',
-                'competency_tracks.name as competency_name',
+                'competencies.name as competency_name',
                 'role_competency_requirements.minimum_level',
                 DB::raw('COUNT(DISTINCT employees.id) as total_employees'),
                 DB::raw('COUNT(DISTINCT CASE WHEN training_records.level_achieved >= role_competency_requirements.minimum_level THEN employees.id END) as employees_met'),
@@ -41,10 +41,10 @@ class CompetencyGapWidget extends TableWidget
             ->groupBy([
                 'role_competency_requirements.id',
                 'role_competency_requirements.job_role_id',
-                'role_competency_requirements.competency_track_id',
+                'role_competency_requirements.competency_id',
                 'role_competency_requirements.minimum_level',
                 'job_roles.name',
-                'competency_tracks.name',
+                'competencies.name',
             ])
                 ->orderByRaw('(total_employees - employees_met) DESC');
     }
@@ -62,7 +62,7 @@ class CompetencyGapWidget extends TableWidget
                 TextColumn::make('competency_name')
                     ->label('Kompetensi')
                     ->searchable(query: fn (Builder $query, string $search): Builder =>
-                        $query->where('competency_tracks.name', 'like', "%{$search}%")
+                        $query->where('competencies.name', 'like', "%{$search}%")
                     ),
                 TextColumn::make('minimum_level')
                     ->label('Level Min.')
@@ -115,3 +115,4 @@ class CompetencyGapWidget extends TableWidget
             ->paginated([15, 30, 50]);
     }
 }
+

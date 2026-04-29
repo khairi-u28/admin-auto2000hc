@@ -30,8 +30,8 @@ class NasionalRegionPage extends Page implements HasTable
         $region = urldecode(request()->route('region') ?? request()->get('region'));
 
         return Employee::query()
-            ->leftJoin('enrollments', 'enrollments.employee_id', '=', 'employees.id')
-            ->selectRaw("employees.area as area, COUNT(DISTINCT employees.branch_id) as jumlah_cabang, COUNT(employees.id) as jumlah_karyawan, SUM(CASE WHEN enrollments.status = 'completed' THEN 1 ELSE 0 END) as enrollment_selesai")
+            ->leftJoin('batch_participants', 'batch_participants.employee_id', '=', 'employees.id')
+            ->selectRaw("employees.area as id, employees.area as area, COUNT(DISTINCT employees.branch_id) as jumlah_cabang, COUNT(employees.id) as jumlah_karyawan, SUM(CASE WHEN batch_participants.status = 'lulus' THEN 1 ELSE 0 END) as training_selesai")
             ->where('employees.region', $region)
             ->groupBy('employees.area');
     }
@@ -40,15 +40,16 @@ class NasionalRegionPage extends Page implements HasTable
     {
         return $table
             ->query($this->getTableQuery())
+
             ->defaultKeySort(false)
             ->columns([
                 TextColumn::make('area')->label('Area')->searchable(),
                 TextColumn::make('jumlah_cabang')->label('Jumlah Cabang')->sortable(),
                 TextColumn::make('jumlah_karyawan')->label('Jumlah Karyawan')->sortable(),
-                TextColumn::make('enrollment_selesai')->label('Enrollment Selesai')->sortable(),
+                TextColumn::make('training_selesai')->label('training Selesai')->sortable(),
                 TextColumn::make('completion_pct')
                     ->label('% Selesai')
-                    ->getStateUsing(fn ($record) => $record->jumlah_karyawan ? round(($record->enrollment_selesai / $record->jumlah_karyawan) * 100,1) . '%' : '0%')
+                    ->getStateUsing(fn ($record) => $record->jumlah_karyawan ? round(($record->training_selesai / $record->jumlah_karyawan) * 100,1) . '%' : '0%')
                     ->sortable(),
             ])
             ->recordActions([
@@ -58,3 +59,7 @@ class NasionalRegionPage extends Page implements HasTable
             ]);
     }
 }
+
+
+
+

@@ -11,7 +11,7 @@ class QuizAttempt extends Model
     use HasUuids;
 
     protected $fillable = [
-        'enrollment_id', 'course_id', 'attempt_number',
+        'batch_participant_id', 'course_id', 'attempt_number',
         'score', 'passed', 'answers', 'submitted_at',
     ];
 
@@ -25,9 +25,9 @@ class QuizAttempt extends Model
         ];
     }
 
-    public function enrollment(): BelongsTo
+    public function batchParticipant(): BelongsTo
     {
-        return $this->belongsTo(Enrollment::class);
+        return $this->belongsTo(BatchParticipant::class);
     }
 
     public function course(): BelongsTo

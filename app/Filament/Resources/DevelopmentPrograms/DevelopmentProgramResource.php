@@ -20,7 +20,9 @@ class DevelopmentProgramResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-presentation-chart-bar';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 0;
+
+    protected static bool $shouldRegisterNavigation = false;
 
     protected static ?string $modelLabel = 'Program Pengembangan';
 
@@ -28,7 +30,7 @@ class DevelopmentProgramResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Enrollment & Operasional';
+        return 'Operasional & Training';
     }
 
     public static function form(Schema $schema): Schema
@@ -55,3 +57,5 @@ class DevelopmentProgramResource extends Resource
         ];
     }
 }
+
+

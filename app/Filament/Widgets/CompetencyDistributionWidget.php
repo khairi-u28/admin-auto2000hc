@@ -60,3 +60,4 @@ class CompetencyDistributionWidget extends ChartWidget
         ];
     }
 }
+

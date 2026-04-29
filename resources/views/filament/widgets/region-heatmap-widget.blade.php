@@ -16,16 +16,16 @@
       <div class="mt-3">
         <div class="text-sm font-medium mb-2">Status Enrollment</div>
         <div class="w-full bg-gray-100 h-3 rounded overflow-hidden flex">
-          <div class="bg-gray-400" @style(["width: {$region['percentages']['not_started']}%"])></div>
-          <div class="bg-blue-500" @style(["width: {$region['percentages']['in_progress']}%"])></div>
-          <div class="bg-green-500" @style(["width: {$region['percentages']['completed']}%"])></div>
-          <div class="bg-red-500" @style(["width: {$region['percentages']['overdue']}%"])></div>
+          <div class="bg-gray-400" @style(["width: {$region['percentages']['menunggu_undangan']}%"])></div>
+          <div class="bg-blue-500" @style(["width: {$region['percentages']['hadir']}%"])></div>
+          <div class="bg-green-500" @style(["width: {$region['percentages']['lulus']}%"])></div>
+          <div class="bg-red-500" @style(["width: {$region['percentages']['batal']}%"])></div>
         </div>
         <div class="flex justify-between text-xs mt-2 text-gray-600">
-          <div>Not started: {{ $region['breakdown']['not_started'] }}</div>
-          <div>In progress: {{ $region['breakdown']['in_progress'] }}</div>
-          <div>Selesai: {{ $region['breakdown']['completed'] }}</div>
-          <div>Overdue: {{ $region['breakdown']['overdue'] }}</div>
+          <div>Not started: {{ $region['breakdown']['menunggu_undangan'] }}</div>
+          <div>In progress: {{ $region['breakdown']['hadir'] }}</div>
+          <div>Selesai: {{ $region['breakdown']['lulus'] }}</div>
+          <div>Overdue: {{ $region['breakdown']['batal'] }}</div>
         </div>
 
         <div class="mt-3 text-right">
@@ -35,3 +35,4 @@
     </div>
   @endforeach
 </div>
+

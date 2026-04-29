@@ -2,13 +2,13 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Enrollment;
+use App\Models\BatchParticipant;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\DB;
 
 class RegionCompletionChartWidget extends ChartWidget
 {
-    protected ?string $heading = 'Tingkat Penyelesaian Enrollment per Region';
+    protected ?string $heading = 'Tingkat Penyelesaian training per Region';
 
     protected static ?int $sort = 3;
 
@@ -21,12 +21,12 @@ class RegionCompletionChartWidget extends ChartWidget
 
     protected function getData(): array
     {
-        $rows = Enrollment::query()
-            ->join('employees', 'enrollments.employee_id', '=', 'employees.id')
+        $rows = BatchParticipant::query()
+            ->join('employees', 'batch_participants.employee_id', '=', 'employees.id')
             ->select(
                 'employees.region',
                 DB::raw('COUNT(*) as total'),
-                DB::raw("SUM(CASE WHEN enrollments.status = 'completed' THEN 1 ELSE 0 END) as completed")
+                DB::raw("SUM(CASE WHEN batch_participants.status = 'lulus' THEN 1 ELSE 0 END) as completed")
             )
             ->whereNotNull('employees.region')
             ->groupBy('employees.region')
@@ -35,7 +35,7 @@ class RegionCompletionChartWidget extends ChartWidget
 
         $labels = $rows->pluck('region')->toArray();
         $totalData = $rows->pluck('total')->toArray();
-        $completedData = $rows->pluck('completed')->toArray();
+        $completedData = $rows->pluck('lulus')->toArray();
 
         $completionPct = $rows->map(function ($row) {
             return $row->total > 0 ? round(($row->completed / $row->total) * 100, 1) : 0;
@@ -45,7 +45,7 @@ class RegionCompletionChartWidget extends ChartWidget
             'labels' => $labels,
             'datasets' => [
                 [
-                    'label'           => 'Total Enrollment',
+                    'label'           => 'Total training',
                     'type'            => 'bar',
                     'data'            => $totalData,
                     'backgroundColor' => 'rgba(26, 58, 92, 0.6)',
@@ -82,7 +82,7 @@ class RegionCompletionChartWidget extends ChartWidget
                     'beginAtZero' => true,
                     'title' => [
                         'display' => true,
-                        'text'    => 'Jumlah Enrollment',
+                        'text'    => 'Jumlah training',
                     ],
                 ],
                 'y1' => [
@@ -102,3 +102,4 @@ class RegionCompletionChartWidget extends ChartWidget
         ];
     }
 }
+

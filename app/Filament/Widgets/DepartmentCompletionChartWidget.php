@@ -2,13 +2,13 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Enrollment;
+use App\Models\BatchParticipant;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\DB;
 
 class DepartmentCompletionChartWidget extends ChartWidget
 {
-    protected ?string $heading = 'Penyelesaian Enrollment per Departemen';
+    protected ?string $heading = 'Penyelesaian training per Departemen';
 
     protected static ?int $sort = 2;
 
@@ -23,15 +23,16 @@ class DepartmentCompletionChartWidget extends ChartWidget
     {
         $departments = ['Sales', 'Aftersales', 'PD', 'HC', 'GS'];
 
-        $rows = Enrollment::query()
-            ->join('curricula', 'enrollments.curriculum_id', '=', 'curricula.id')
+        $rows = BatchParticipant::query()
+            ->join('employees', 'batch_participants.employee_id', '=', 'employees.id')
+            ->join('job_roles', 'employees.job_role_id', '=', 'job_roles.id')
             ->select(
-                'curricula.department',
+                'job_roles.department',
                 DB::raw('COUNT(*) as total'),
-                DB::raw("SUM(CASE WHEN enrollments.status = 'completed' THEN 1 ELSE 0 END) as completed")
+                DB::raw("SUM(CASE WHEN batch_participants.status = 'lulus' THEN 1 ELSE 0 END) as completed")
             )
-            ->whereIn('curricula.department', $departments)
-            ->groupBy('curricula.department')
+            ->whereIn('job_roles.department', $departments)
+            ->groupBy('job_roles.department')
             ->get()
             ->keyBy('department');
 
@@ -52,7 +53,7 @@ class DepartmentCompletionChartWidget extends ChartWidget
             'labels' => $departments,
             'datasets' => [
                 [
-                    'label'           => 'Total Enrollment',
+                    'label'           => 'Total training',
                     'type'            => 'bar',
                     'data'            => $totalData,
                     'backgroundColor' => 'rgba(26, 58, 92, 0.9)',
@@ -103,3 +104,4 @@ class DepartmentCompletionChartWidget extends ChartWidget
         ];
     }
 }
+

@@ -14,7 +14,7 @@ class EnrollmentForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('Data Enrollment')
+            Section::make('Data Peserta Batch')
                 ->columns(2)
                 ->components([
                     Select::make('employee_id')
@@ -23,9 +23,9 @@ class EnrollmentForm
                         ->searchable()
                         ->preload()
                         ->required(),
-                    Select::make('curriculum_id')
-                        ->label('Kurikulum')
-                        ->relationship('curriculum', 'title')
+                    Select::make('batch_id')
+                        ->label('Batch Training')
+                        ->relationship('batch', 'name')
                         ->searchable()
                         ->preload()
                         ->required(),
@@ -33,12 +33,12 @@ class EnrollmentForm
                         ->label('Status')
                         ->required()
                         ->options([
-                            'not_started' => 'Belum Dimulai',
-                            'in_progress' => 'Sedang Berjalan',
-                            'completed'   => 'Selesai',
-                            'overdue'     => 'Terlambat',
+                            'menunggu_undangan' => 'Menunggu Undangan',
+                            'sedang_berjalan' => 'Sedang Berjalan',
+                            'lulus'   => 'Lulus',
+                            'Terlambat'     => 'Terlambat',
                         ])
-                        ->default('not_started'),
+                        ->default('menunggu_undangan'),
                     TextInput::make('progress_pct')
                         ->label('Progres (%)')
                         ->numeric()
@@ -50,8 +50,9 @@ class EnrollmentForm
                     DateTimePicker::make('started_at')
                         ->label('Mulai Pada'),
                     DateTimePicker::make('completed_at')
-                        ->label('Selesai Pada'),
+                        ->label('Lulus Pada'),
                 ]),
         ]);
     }
 }
+

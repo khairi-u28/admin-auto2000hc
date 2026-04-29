@@ -21,7 +21,9 @@ class TrainingRecordResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 0;
+
+    protected static bool $shouldRegisterNavigation = false;
 
     protected static ?string $modelLabel = 'Rekam Pelatihan';
 
@@ -29,7 +31,7 @@ class TrainingRecordResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Enrollment & Operasional';
+        return 'Operasional & Training';
     }
 
     public static function form(Schema $schema): Schema
@@ -56,3 +58,5 @@ class TrainingRecordResource extends Resource
         ];
     }
 }
+
+

@@ -31,14 +31,14 @@ class RegionHeatmapWidget extends Widget
 
         foreach ($mapping as $region => $meta) {
             $activeEmployees = Employee::where('status', 'active')->where('region', $region)->count();
-            // enrollment breakdown per region
+            // training breakdown per region
             $notStarted = 0; $inProgress = 0; $completed = 0; $overdue = 0;
 
             // simplified counts via joins
-            $rows = DB::table('enrollments')
-                ->join('employees', 'enrollments.employee_id', '=', 'employees.id')
+            $rows = DB::table('batch_participants')
+                ->join('employees', 'batch_participants.employee_id', '=', 'employees.id')
                 ->where('employees.region', $region)
-                ->selectRaw("SUM(CASE WHEN enrollments.status = 'not_started' THEN 1 ELSE 0 END) as not_started, SUM(CASE WHEN enrollments.status = 'in_progress' THEN 1 ELSE 0 END) as in_progress, SUM(CASE WHEN enrollments.status = 'completed' THEN 1 ELSE 0 END) as completed, SUM(CASE WHEN enrollments.status = 'overdue' THEN 1 ELSE 0 END) as overdue")
+                ->selectRaw("SUM(CASE WHEN batch_participants.status = 'menunggu_undangan' THEN 1 ELSE 0 END) as not_started, SUM(CASE WHEN batch_participants.status = 'hadir' THEN 1 ELSE 0 END) as in_progress, SUM(CASE WHEN batch_participants.status = 'lulus' THEN 1 ELSE 0 END) as completed, SUM(CASE WHEN batch_participants.status = 'batal' THEN 1 ELSE 0 END) as overdue")
                 ->first();
 
             if ($rows) {
@@ -56,18 +56,20 @@ class RegionHeatmapWidget extends Widget
                 'behavior' => $meta['behavior'],
                 'aubo' => $meta['aubo'],
                 'breakdown' => [
-                    'not_started' => $notStarted,
-                    'in_progress' => $inProgress,
-                    'completed' => $completed,
-                    'overdue' => $overdue,
+                    'menunggu_undangan' => $notStarted,
+                    'hadir' => $inProgress,
+                    'lulus' => $completed,
+                    'batal' => $overdue,
                 ],
                 'percentages' => [
-                    'not_started' => $total > 0 ? round(($notStarted / $total) * 100) : 0,
-                    'in_progress' => $total > 0 ? round(($inProgress / $total) * 100) : 0,
-                    'completed' => $total > 0 ? round(($completed / $total) * 100) : 0,
-                    'overdue' => $total > 0 ? round(($overdue / $total) * 100) : 0,
+                    'menunggu_undangan' => $total > 0 ? round(($notStarted / $total) * 100) : 0,
+                    'hadir' => $total > 0 ? round(($inProgress / $total) * 100) : 0,
+                    'lulus' => $total > 0 ? round(($completed / $total) * 100) : 0,
+                    'batal' => $total > 0 ? round(($overdue / $total) * 100) : 0,
                 ],
             ];
         }
     }
 }
+
+

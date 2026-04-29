@@ -23,25 +23,25 @@ class EnrollmentsTable
                     ->label('Nama Karyawan')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('curriculum.title')
-                    ->label('Kurikulum')
+                TextColumn::make('batch.name')
+                    ->label('Batch Training')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'not_started' => 'secondary',
-                        'in_progress' => 'primary',
-                        'completed'   => 'success',
-                        'overdue'     => 'danger',
+                        'menunggu_undangan' => 'secondary',
+                        'sedang_berjalan' => 'primary',
+                        'lulus'   => 'success',
+                        'Terlambat'     => 'danger',
                         default       => 'secondary',
                     })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'not_started' => 'Belum Dimulai',
-                        'in_progress' => 'Sedang Berjalan',
-                        'completed'   => 'Selesai',
-                        'overdue'     => 'Terlambat',
+                        'menunggu_undangan' => 'Menunggu Undangan',
+                        'sedang_berjalan' => 'Sedang Berjalan',
+                        'lulus'   => 'Lulus',
+                        'Terlambat'     => 'Terlambat',
                         default       => $state,
                     }),
                 TextColumn::make('progress_pct')
@@ -57,14 +57,14 @@ class EnrollmentsTable
                 SelectFilter::make('status')
                     ->label('Status')
                     ->options([
-                        'not_started' => 'Belum Dimulai',
-                        'in_progress' => 'Sedang Berjalan',
-                        'completed'   => 'Selesai',
-                        'overdue'     => 'Terlambat',
+                        'menunggu_undangan' => 'Menunggu Undangan',
+                        'sedang_berjalan' => 'Sedang Berjalan',
+                        'lulus'   => 'Lulus',
+                        'Terlambat'     => 'Terlambat',
                     ]),
-                SelectFilter::make('curriculum_id')
-                    ->label('Kurikulum')
-                    ->relationship('curriculum', 'title')
+                SelectFilter::make('batch_id')
+                    ->label('Batch Training')
+                    ->relationship('batch', 'name')
                     ->searchable()
                     ->preload(),
             ])
@@ -78,3 +78,4 @@ class EnrollmentsTable
             ]);
     }
 }
+

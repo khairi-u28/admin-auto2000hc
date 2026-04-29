@@ -11,7 +11,7 @@ class JobRole extends Model
     use HasUuids;
 
     protected $fillable = [
-        'code', 'name', 'department', 'level', 'category',
+        'code', 'name', 'department', 'level', 'golongan',
     ];
 
     public function employees(): HasMany
@@ -24,8 +24,8 @@ class JobRole extends Model
         return $this->hasMany(RoleCompetencyRequirement::class);
     }
 
-    public function curricula(): HasMany
+    public function learningPaths(): HasMany
     {
-        return $this->hasMany(Curriculum::class);
+        return $this->hasMany(LearningPath::class);
     }
 }

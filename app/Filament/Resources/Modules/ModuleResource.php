@@ -29,7 +29,7 @@ class ModuleResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Manajemen Konten';
+        return 'Learning Management';
     }
 
     public static function form(Schema $schema): Schema

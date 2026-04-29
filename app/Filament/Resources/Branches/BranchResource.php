@@ -69,9 +69,9 @@ class BranchResource extends Resource
                         TextEntry::make('total_karyawan')
                             ->label('Total Karyawan')
                             ->state(fn (Branch $record): int => $record->employees()->count()),
-                        TextEntry::make('enrollment_selesai')
-                            ->label('Enrollment Selesai')
-                            ->state(fn (Branch $record): int => $record->employees()->whereHas('enrollments', fn ($query) => $query->where('status', 'completed'))->count()),
+                        TextEntry::make('training_selesai')
+                            ->label('Training Selesai')
+                            ->state(fn (Branch $record): int => $record->employees()->whereHas('batchParticipants', fn ($query) => $query->where('status', 'lulus'))->count()),
                         TextEntry::make('kepala_cabang')
                             ->label('Kepala Cabang')
                             ->state(fn (Branch $record): string => $record->employees()

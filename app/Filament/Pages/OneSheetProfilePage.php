@@ -19,9 +19,9 @@ class OneSheetProfilePage extends Page
         $this->employee = Employee::with([
             'jobRole',
             'branch',
-            'trainingRecords.competencyTrack',
+            'trainingRecords.competency',
             'developmentPrograms',
-            'enrollments.curriculum',
+            'batch_participants.batch.competency',
         ])->findOrFail($id);
     }
 
@@ -35,3 +35,6 @@ class OneSheetProfilePage extends Page
         return 'filament.pages.one-sheet-profile';
     }
 }
+
+
+
