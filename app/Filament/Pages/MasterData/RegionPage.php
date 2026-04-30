@@ -1,7 +1,7 @@
 <?php
 namespace App\Filament\Pages\MasterData;
 
-use App\Models\Branch;
+use App\Models\Region;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 
@@ -36,11 +36,17 @@ class RegionPage extends Page
 
     public function getRegionData(): array
     {
-        return Branch::select('region')
-            ->selectRaw('COUNT(*) as total_cabang')
-            ->selectRaw('COUNT(DISTINCT area) as total_area')
-            ->groupBy('region')
-            ->orderBy('region')
+        return Region::select('regions.nama_region as region', 'regions.nama_rbh as nama_rbh')
+            ->selectRaw('COUNT(DISTINCT areas.id) as total_area')
+            ->selectRaw('COUNT(DISTINCT branches.id) as total_cabang')
+            ->selectRaw('COUNT(DISTINCT employees.id) as total_karyawan')
+            ->selectRaw('AVG(employees.hav_score) as avg_hav_score')
+            ->selectRaw('COUNT(CASE WHEN employees.hav_score >= 8 THEN 1 END) as high_performers')
+            ->leftJoin('areas', 'regions.id', '=', 'areas.region_id')
+            ->leftJoin('branches', 'areas.id', '=', 'branches.area_id')
+            ->leftJoin('employees', 'branches.id', '=', 'employees.branch_id')
+            ->groupBy('regions.id', 'regions.nama_rbh')
+            ->orderBy('regions.nama_region')
             ->get()
             ->toArray();
     }

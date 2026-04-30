@@ -18,6 +18,7 @@ class Batch extends Model
         'type',
         'competency_id',
         'branch_id',
+        'area_penyelenggara',
         'pic_id',
         'start_date',
         'end_date',

@@ -49,6 +49,11 @@ class BatchSchemas
                         ->preload()
                         ->required(fn () => $type === 'cabang')
                         ->visible(fn () => $type === 'cabang'),
+
+                    TextInput::make('area_penyelenggara')
+                        ->label('Area Penyelenggara')
+                        ->required(fn () => $type === 'cabang')
+                        ->visible(fn () => $type === 'cabang'),
                     Select::make('pic_id')
                         ->label('PIC')
                         ->relationship('pic', 'name')

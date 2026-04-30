@@ -58,7 +58,7 @@ class DemoSeeder extends Seeder
                 'start_date' => $faker->dateTimeBetween('-6 months', '+1 month'),
                 'end_date' => $faker->dateTimeBetween('+1 month', '+2 months'),
                 'target_participants' => $faker->numberBetween(20, 50),
-                'evaluation_notes' => $status === 'selesai' ? $faker->paragraph : null,
+                'evaluation' => $status === 'selesai' ? $faker->paragraph : null,
                 'created_by' => $admin->id,
             ]);
 

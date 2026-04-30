@@ -119,6 +119,39 @@ class NasionalPage extends Page implements HasTable
             ->all();
     }
 
+    public function getCompetencyCompletionData(): array
+    {
+        return \App\Models\TrainingRecord::query()
+            ->selectRaw('competencies.name as competency_name, COUNT(*) as total_records, AVG(training_records.level_achieved) as avg_level')
+            ->join('competencies', 'training_records.competency_id', '=', 'competencies.id')
+            ->groupBy('competencies.name')
+            ->orderBy('total_records', 'desc')
+            ->limit(10)
+            ->get()
+            ->toArray();
+    }
+
+    public function getHAVScoreDistribution(): array
+    {
+        $distribution = \App\Models\Employee::query()
+            ->whereNotNull('hav_score')
+            ->selectRaw('
+                CASE 
+                    WHEN hav_score >= 9 THEN "High Performers (9-11)"
+                    WHEN hav_score >= 7 THEN "Strong Performers (7-8)"
+                    WHEN hav_score >= 5 THEN "Candidates (5-6)"
+                    ELSE "Developing (<5)"
+                END as category,
+                COUNT(*) as count
+            ')
+            ->groupBy('category')
+            ->orderByRaw('MIN(hav_score) DESC')
+            ->get()
+            ->toArray();
+
+        return $distribution;
+    }
+
     protected function getTableQuery(): Builder
     {
         return Employee::query()

@@ -25,7 +25,7 @@ class Area extends Model
 
     public function branches(): HasMany
     {
-        return $this->hasMany(Branch::class);
+        return $this->hasMany(Branch::class, 'area_id');
     }
 
     public function employees(): HasManyThrough

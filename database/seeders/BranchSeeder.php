@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Area;
 use App\Models\Branch;
+use App\Models\Region;
 use Illuminate\Database\Seeder;
 
 class BranchSeeder extends Seeder
@@ -127,7 +129,23 @@ class BranchSeeder extends Seeder
         ];
 
         foreach ($branches as $branch) {
-            Branch::firstOrCreate(['code' => $branch['code']], $branch);
+            $region = Region::where('nama_region', $branch['region'])->first();
+            $area = Area::where('nama_area', $branch['area'])
+                ->when($region, fn ($query) => $query->where('region_id', $region->id))
+                ->first();
+
+            Branch::updateOrCreate([
+                'code' => $branch['code'],
+            ], [
+                'name' => $branch['name'],
+                'area' => $branch['area'],
+                'region' => $branch['region'],
+                'type' => $branch['type'],
+                'region_id' => $region?->id,
+                'area_id' => $area?->id,
+                'kode_cabang' => $branch['code'],
+                'nama' => $branch['name'],
+            ]);
         }
     }
 }

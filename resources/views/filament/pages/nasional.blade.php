@@ -4,72 +4,95 @@
     $statusDistribution = $this->getTrainingStatusDistribution();
     $monthlyTrend = $this->getMonthlyCompletionTrend();
     $regionCompletion = $this->getRegionCompletionData();
+    $competencyCompletion = $this->getCompetencyCompletionData();
+    $havDistribution = $this->getHAVScoreDistribution();
     $maxMonthly = max(array_column($monthlyTrend, 'value')) ?: 1;
   @endphp
-  <div class="space-y-4">
-    <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
-      <div class="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-100 dark:border-gray-700">
-        <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">Total Karyawan Aktif Nasional</div>
-        <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $stats['total_karyawan_aktif'] }}</div>
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+    <div style="display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:1rem;">
+      <div style="background:#ffffff;padding:1rem;border-radius:1rem;box-shadow:0 1px 2px rgba(0,0,0,0.08);border:1px solid #e5e7eb;">
+        <div style="font-size:0.875rem;color:#475569;font-weight:500;">Total Karyawan Aktif Nasional</div>
+        <div style="font-size:2rem;font-weight:700;color:#0f172a;">{{ $stats['total_karyawan_aktif'] }}</div>
       </div>
-      <div class="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-100 dark:border-gray-700">
-        <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">Total Cabang</div>
-        <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $stats['total_cabang'] }}</div>
+      <div style="background:#ffffff;padding:1rem;border-radius:1rem;box-shadow:0 1px 2px rgba(0,0,0,0.08);border:1px solid #e5e7eb;">
+        <div style="font-size:0.875rem;color:#475569;font-weight:500;">Total Cabang</div>
+        <div style="font-size:2rem;font-weight:700;color:#0f172a;">{{ $stats['total_cabang'] }}</div>
       </div>
-      <div class="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-100 dark:border-gray-700">
-        <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">Total training</div>
-        <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $stats['total_training'] }}</div>
+      <div style="background:#ffffff;padding:1rem;border-radius:1rem;box-shadow:0 1px 2px rgba(0,0,0,0.08);border:1px solid #e5e7eb;">
+        <div style="font-size:0.875rem;color:#475569;font-weight:500;">Total training</div>
+        <div style="font-size:2rem;font-weight:700;color:#0f172a;">{{ $stats['total_training'] }}</div>
       </div>
-      <div class="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-100 dark:border-gray-700">
-        <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">Completion Rate</div>
-        <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $stats['completion_rate'] }}%</div>
+      <div style="background:#ffffff;padding:1rem;border-radius:1rem;box-shadow:0 1px 2px rgba(0,0,0,0.08);border:1px solid #e5e7eb;">
+        <div style="font-size:0.875rem;color:#475569;font-weight:500;">Completion Rate</div>
+        <div style="font-size:2rem;font-weight:700;color:#0f172a;">{{ $stats['completion_rate'] }}%</div>
       </div>
-      <div class="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-100 dark:border-gray-700">
-        <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">Total Training Records</div>
-        <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $stats['total_training_records'] }}</div>
+      <div style="background:#ffffff;padding:1rem;border-radius:1rem;box-shadow:0 1px 2px rgba(0,0,0,0.08);border:1px solid #e5e7eb;">
+        <div style="font-size:0.875rem;color:#475569;font-weight:500;">Total Training Records</div>
+        <div style="font-size:2rem;font-weight:700;color:#0f172a;">{{ $stats['total_training_records'] }}</div>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-      <div class="bg-white dark:bg-gray-800 p-6 rounded shadow border border-gray-100 dark:border-gray-700 xl:col-span-2">
-        <div class="font-bold text-lg mb-4 text-gray-900 dark:text-white">Completion Rate by Region</div>
-        <div class="space-y-4">
+    <div style="display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:1rem;">
+      <div style="background:#ffffff;padding:1.5rem;border-radius:1rem;box-shadow:0 1px 2px rgba(0,0,0,0.08);border:1px solid #e5e7eb;">
+        <div style="font-size:1.125rem;font-weight:700;color:#0f172a;margin-bottom:1rem;">Completion Rate by Region</div>
+        <div style="display:flex;flex-direction:column;gap:1rem;">
           @foreach($regionCompletion as $regionRow)
             <div>
-              <div class="flex items-center justify-between text-sm mb-1">
-                <span class="font-medium text-gray-700 dark:text-gray-200">{{ $regionRow['region'] }}</span>
-                <span class="text-gray-500 dark:text-gray-400">{{ $regionRow['rate'] }}%</span>
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.875rem;margin-bottom:0.25rem;color:#0f172a;font-weight:500;">
+                <span>{{ $regionRow['region'] }}</span>
+                <span style="color:#64748b;">{{ $regionRow['rate'] }}%</span>
               </div>
-              <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
-                <div class="bg-[#1A3A5C] h-3 rounded-full" style="width: {{ $regionRow['rate'] }}%;"></div>
+              <div style="width:100%;background:#f3f4f6;border-radius:999px;height:0.75rem;overflow:hidden;">
+                <div style="width: {{ $regionRow['rate'] }}%;background:#1A3A5C;height:0.75rem;border-radius:999px;"></div>
               </div>
             </div>
           @endforeach
         </div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 p-6 rounded shadow border border-gray-100 dark:border-gray-700">
-        <div class="font-bold text-lg mb-4 text-gray-900 dark:text-white">training Status Distribution</div>
-        <div class="space-y-3">
-          @foreach(['menunggu_undangan' => 'Not Started', 'hadir' => 'In Progress', 'lulus' => 'lulus', 'batal' => 'batal'] as $statusKey => $statusLabel)
-            <div class="flex items-center justify-between text-sm">
-              <span class="text-gray-600 dark:text-gray-300">{{ $statusLabel }}</span>
-              <span class="font-semibold text-gray-900 dark:text-white">{{ $statusDistribution[$statusKey] ?? 0 }}</span>
+      <div style="background:#ffffff;padding:1.5rem;border-radius:1rem;box-shadow:0 1px 2px rgba(0,0,0,0.08);border:1px solid #e5e7eb;">
+        <div style="font-size:1.125rem;font-weight:700;color:#0f172a;margin-bottom:1rem;">HAV Score Distribution</div>
+        <div style="display:flex;flex-direction:column;gap:0.75rem;">
+          @foreach($havDistribution as $category)
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.875rem;color:#475569;">
+              <span>{{ $category['category'] }}</span>
+              <span style="font-weight:600;color:#0f172a;">{{ $category['count'] }}</span>
             </div>
           @endforeach
         </div>
       </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 p-6 rounded shadow border border-gray-100 dark:border-gray-700">
-      <div class="font-bold text-lg mb-4 text-gray-900 dark:text-white">Monthly Completion Trend</div>
-      <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+    <div style="background:#ffffff;padding:1.5rem;border-radius:1rem;box-shadow:0 1px 2px rgba(0,0,0,0.08);border:1px solid #e5e7eb;">
+      <div style="font-size:1.125rem;font-weight:700;color:#0f172a;margin-bottom:1rem;">Top Competency Completion Rates</div>
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        @foreach($competencyCompletion as $competency)
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.875rem;margin-bottom:0.25rem;color:#0f172a;font-weight:500;">
+              <span>{{ $competency['competency_name'] }}</span>
+              <span style="color:#64748b;">Avg Level: {{ number_format($competency['avg_level'], 1) }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:#64748b;margin-bottom:0.5rem;">
+              <span>{{ $competency['total_records'] }} records</span>
+              <span>{{ number_format(($competency['avg_level'] / 3) * 100, 1) }}% completion</span>
+            </div>
+            <div style="width:100%;background:#f3f4f6;border-radius:999px;height:0.5rem;overflow:hidden;">
+              <div style="width: {{ ($competency['avg_level'] / 3) * 100 }}%;background:#10B981;height:0.5rem;border-radius:999px;"></div>
+            </div>
+          </div>
+        @endforeach
+      </div>
+    </div>
+
+    <div style="background:#ffffff;padding:1.5rem;border-radius:1rem;box-shadow:0 1px 2px rgba(0,0,0,0.08);border:1px solid #e5e7eb;">
+      <div style="font-size:1.125rem;font-weight:700;color:#0f172a;margin-bottom:1rem;">Monthly Completion Trend</div>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;">
         @foreach($monthlyTrend as $point)
-          <div class="rounded-lg border border-gray-100 dark:border-gray-700 p-4">
-            <div class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">{{ $point['label'] }}</div>
-            <div class="text-2xl font-bold text-gray-900 dark:text-white mb-3">{{ $point['value'] }}</div>
-            <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-              <div class="bg-[#1B7A4E] h-2 rounded-full" style="width: {{ round(($point['value'] / $maxMonthly) * 100, 1) }}%;"></div>
+          <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:0.75rem;padding:1rem;">
+            <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;margin-bottom:0.5rem;">{{ $point['label'] }}</div>
+            <div style="font-size:2rem;font-weight:700;color:#0f172a;margin-bottom:0.75rem;">{{ $point['value'] }}</div>
+            <div style="width:100%;background:#f3f4f6;border-radius:999px;height:0.5rem;overflow:hidden;">
+              <div style="width: {{ round(($point['value'] / $maxMonthly) * 100, 1) }}%;background:#1B7A4E;height:0.5rem;border-radius:999px;"></div>
             </div>
           </div>
         @endforeach
@@ -77,7 +100,7 @@
     </div>
 
     {{-- The data table defined in NasionalPage.php --}}
-    <div class="mt-4">
+    <div style="margin-top:1rem;">
       {{ $this->table }}
     </div>
   </div>

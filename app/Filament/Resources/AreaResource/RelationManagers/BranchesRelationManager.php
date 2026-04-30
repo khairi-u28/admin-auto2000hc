@@ -37,6 +37,10 @@ class BranchesRelationManager extends RelationManager
                 TextColumn::make('employees_count')
                     ->label('Jml. Karyawan')
                     ->sortable(),
+                TextColumn::make('area_penyelenggara')
+                    ->label('Area Penyelenggara')
+                    ->placeholder('-')
+                    ->toggleable(),
             ])
             ->recordActions([
                 \Filament\Actions\EditAction::make()

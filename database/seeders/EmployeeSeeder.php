@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\Area;
 use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\JobRole;
+use App\Models\Region;
 use Illuminate\Database\Seeder;
 
 class EmployeeSeeder extends Seeder
@@ -16,6 +18,90 @@ class EmployeeSeeder extends Seeder
         $role    = fn (string $code) => JobRole::where('code', $code)->value('id');
 
         $employees = [
+            // ── ABH & RBH EMPLOYEES ───────────────────────────────────────
+            // Create Area Business Heads for each area
+            [
+                'nrp'           => '2001',
+                'full_name'     => 'BAMBANG SUTRISNO',
+                'position_name' => 'Area Business Head',
+                'job_role_id'   => $role('ABH01'),
+                'branch_id'     => $branch('T154'),
+                'area'          => 'DKI2',
+                'region'        => 'DKI JABAR PRIME FLEET',
+                'employee_type' => 'VSP',
+                'entry_date'    => '2015-01-15',
+                'date_of_birth' => '1978-05-10',
+                'status'        => 'active',
+                'italent_user'  => '2001',
+                'hav_score'     => 10,
+                'hav_category'  => 'High Performers',
+            ],
+            [
+                'nrp'           => '2002',
+                'full_name'     => 'SITI NURHALIZA',
+                'position_name' => 'Area Business Head',
+                'job_role_id'   => $role('ABH01'),
+                'branch_id'     => $branch('T055'),
+                'area'          => 'DKI1',
+                'region'        => 'DKI JABAR PRIME FLEET',
+                'employee_type' => 'VSP',
+                'entry_date'    => '2016-03-20',
+                'date_of_birth' => '1980-07-22',
+                'status'        => 'active',
+                'italent_user'  => '2002',
+                'hav_score'     => 9,
+                'hav_category'  => 'Strong Performers',
+            ],
+            [
+                'nrp'           => '2003',
+                'full_name'     => 'ANTON WIJAYA',
+                'position_name' => 'Area Business Head',
+                'job_role_id'   => $role('ABH01'),
+                'branch_id'     => $branch('T252'),
+                'area'          => 'JABAR',
+                'region'        => 'DKI JABAR PRIME FLEET',
+                'employee_type' => 'VSP',
+                'entry_date'    => '2014-06-10',
+                'date_of_birth' => '1977-12-08',
+                'status'        => 'active',
+                'italent_user'  => '2003',
+                'hav_score'     => 8,
+                'hav_category'  => 'Strong Performers',
+            ],
+            // Create Region Business Heads for each region
+            [
+                'nrp'           => '3001',
+                'full_name'     => 'HENDRIK SETIAWAN',
+                'position_name' => 'Region Business Head',
+                'job_role_id'   => $role('RBH01'),
+                'branch_id'     => $branch('T000'),
+                'area'          => 'HEAD OFFICE',
+                'region'        => 'DKI JABAR PRIME FLEET',
+                'employee_type' => 'HO',
+                'entry_date'    => '2012-01-10',
+                'date_of_birth' => '1975-08-15',
+                'status'        => 'active',
+                'italent_user'  => '3001',
+                'hav_score'     => 11,
+                'hav_category'  => 'High Performers',
+            ],
+            [
+                'nrp'           => '3002',
+                'full_name'     => 'DIANA KUSUMA',
+                'position_name' => 'Region Business Head',
+                'job_role_id'   => $role('RBH01'),
+                'branch_id'     => $branch('T700'),
+                'area'          => 'JATIM',
+                'region'        => 'JATKALBAL',
+                'employee_type' => 'VSP',
+                'entry_date'    => '2013-05-20',
+                'date_of_birth' => '1976-11-30',
+                'status'        => 'active',
+                'italent_user'  => '3002',
+                'hav_score'     => 10,
+                'hav_category'  => 'High Performers',
+            ],
+
             // ── NAMED: SALES ─────────────────────────────────────────────
             [
                 'nrp'           => '6018',
@@ -380,7 +466,10 @@ class EmployeeSeeder extends Seeder
                 'employee_type' => 'VSP',
                 'entry_date'    => '2011-05-16',
                 'date_of_birth' => '1987-01-30',
+                'hav_score'     => 5,
+                'hav_category'  => 'Developing',
                 'status'        => 'active',
+                'italent_user'  => '66456',
             ],
             [
                 'nrp'           => '66789',
@@ -394,7 +483,10 @@ class EmployeeSeeder extends Seeder
                 'entry_date'    => '2006-08-01',
                 'date_of_birth' => '1979-07-08',
                 'grade'         => '4B',
+                'hav_score'     => 9,
+                'hav_category'  => 'High Performers',
                 'status'        => 'active',
+                'italent_user'  => '66789',
             ],
             [
                 'nrp'           => '70001',
@@ -457,7 +549,7 @@ class EmployeeSeeder extends Seeder
         ];
 
         foreach ($employees as $data) {
-            Employee::firstOrCreate(['nrp' => $data['nrp']], $data);
+            Employee::updateOrCreate(['nrp' => $data['nrp']], $data);
         }
 
         // Generate 200 more random employees

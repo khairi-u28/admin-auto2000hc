@@ -56,7 +56,7 @@ class AdminPanelProvider extends PanelProvider
                 \App\Filament\Widgets\DepartmentCompletionChartWidget::class,
                 \App\Filament\Widgets\CompetencyDistributionWidget::class,
                 \App\Filament\Widgets\RegionHeatmapWidget::class,
-                \App\Filament\Widgets\CompetencyGapWidget::class,
+                // \App\Filament\Widgets\CompetencyGapWidget::class,
                 \App\Filament\Widgets\BranchLeaderboardWidget::class,
             ])
             ->middleware([

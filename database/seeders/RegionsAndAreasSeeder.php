@@ -18,12 +18,15 @@ class RegionsAndAreasSeeder extends Seeder
         ];
 
         foreach ($data as $regionName => $areas) {
-            $region = Region::firstOrCreate(['nama_region' => $regionName]);
+            $region = Region::firstOrCreate(['nama_region' => $regionName], [
+                'nama_rbh' => 'HENDRIK SETIAWAN'
+            ]);
 
             foreach ($areas as $areaName) {
                 Area::firstOrCreate([
                     'region_id' => $region->id,
                     'nama_area' => $areaName,
+                    'nama_abh' => 'BAMBANG SUTRISNO'
                 ]);
             }
         }

@@ -6,6 +6,7 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Carbon\Carbon;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -28,10 +29,6 @@ class EmployeesTable
                     ->sortable(),
                 TextColumn::make('position_name')
                     ->label('Position Name')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('pos')
-                    ->label('POS')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('branch.kode_cabang')
@@ -57,7 +54,7 @@ class EmployeesTable
                 TextColumn::make('masa_bakti')
                     ->label('Masa Bakti')
                     ->sortable()
-                    ->placeholder('-'),
+                    ->getStateUsing(fn ($record) => $record->entry_date ? Carbon::parse($record->entry_date)->diffAsCarbonInterval(Carbon::now())->format('%y tahun %m bulan') : '-'),
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
