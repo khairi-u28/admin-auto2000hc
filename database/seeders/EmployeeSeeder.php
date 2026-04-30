@@ -8,6 +8,7 @@ use App\Models\Employee;
 use App\Models\JobRole;
 use App\Models\Region;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 
 class EmployeeSeeder extends Seeder
 {
@@ -552,22 +553,131 @@ class EmployeeSeeder extends Seeder
             Employee::updateOrCreate(['nrp' => $data['nrp']], $data);
         }
 
+        // Ensure exactly 1 ABH per Area and 1 RBH per Region,
+        // and sync the "Nama ABH/RBH" columns for Master Data pages.
+        $abhRoleId = $role('ABH01') ?: JobRole::firstOrCreate(
+            ['code' => 'ABH01'],
+            ['name' => 'Area Business Head', 'department' => 'Sales', 'level' => '5', 'golongan' => 'V']
+        )->getKey();
+
+        $rbhRoleId = $role('RBH01') ?: JobRole::firstOrCreate(
+            ['code' => 'RBH01'],
+            ['name' => 'Region Business Head', 'department' => 'Sales', 'level' => '6', 'golongan' => 'V']
+        )->getKey();
+
+        $allBranches = Branch::query()->get();
+
+        Area::query()
+            ->with(['region', 'branches'])
+            ->orderBy('nama_area')
+            ->get()
+            ->values()
+            ->each(function (Area $area, int $index) use ($abhRoleId, $allBranches): void {
+                $regionName = $area->region?->nama_region ?? 'UNKNOWN';
+
+                $existing = Employee::query()
+                    ->where('job_role_id', $abhRoleId)
+                    ->where('area', $area->nama_area)
+                    ->where('region', $regionName)
+                    ->first();
+
+                $branchId = $area->branches->first()?->getKey()
+                    ?? Branch::query()->where('area', $area->nama_area)->value('id')
+                    ?? Branch::query()->where('region', $regionName)->value('id')
+                    ?? $allBranches->first()?->getKey();
+
+                if (! $branchId) {
+                    return;
+                }
+
+                $employee = $existing ?? Employee::create([
+                    'nrp' => (string) (900001 + $index),
+                    'full_name' => 'ABH ' . $area->nama_area,
+                    'nama_lengkap' => 'ABH ' . $area->nama_area,
+                    'position_name' => 'Area Business Head',
+                    'job_role_id' => $abhRoleId,
+                    'branch_id' => $branchId,
+                    'area' => $area->nama_area,
+                    'region' => $regionName,
+                    'employee_type' => 'VSP',
+                    'entry_date' => Carbon::parse('2016-01-01')->addMonths($index % 12)->toDateString(),
+                    'date_of_birth' => Carbon::parse('1980-01-01')->addDays($index * 7)->toDateString(),
+                    'status' => 'active',
+                    'italent_user' => (string) (900001 + $index),
+                ]);
+
+                $resolvedName = $employee->nama_lengkap ?? $employee->full_name;
+
+                if ($resolvedName && $area->nama_abh !== $resolvedName) {
+                    $area->nama_abh = $resolvedName;
+                    $area->save();
+                }
+            });
+
+        Region::query()
+            ->with(['branches'])
+            ->orderBy('nama_region')
+            ->get()
+            ->values()
+            ->each(function (Region $region, int $index) use ($rbhRoleId, $allBranches): void {
+                $regionName = $region->nama_region;
+
+                $existing = Employee::query()
+                    ->where('job_role_id', $rbhRoleId)
+                    ->where('region', $regionName)
+                    ->first();
+
+                $branchId = $region->branches->first()?->getKey()
+                    ?? Branch::query()->where('region', $regionName)->value('id')
+                    ?? $allBranches->first()?->getKey();
+
+                if (! $branchId) {
+                    return;
+                }
+
+                $employee = $existing ?? Employee::create([
+                    'nrp' => (string) (910001 + $index),
+                    'full_name' => 'RBH ' . $regionName,
+                    'nama_lengkap' => 'RBH ' . $regionName,
+                    'position_name' => 'Region Business Head',
+                    'job_role_id' => $rbhRoleId,
+                    'branch_id' => $branchId,
+                    'area' => 'HEAD OFFICE',
+                    'region' => $regionName,
+                    'employee_type' => 'HO',
+                    'entry_date' => Carbon::parse('2014-01-01')->addMonths($index % 12)->toDateString(),
+                    'date_of_birth' => Carbon::parse('1978-01-01')->addDays($index * 11)->toDateString(),
+                    'status' => 'active',
+                    'italent_user' => (string) (910001 + $index),
+                ]);
+
+                $resolvedName = $employee->nama_lengkap ?? $employee->full_name;
+
+                if ($resolvedName && $region->nama_rbh !== $resolvedName) {
+                    $region->nama_rbh = $resolvedName;
+                    $region->save();
+                }
+            });
+
         // Generate 200 more random employees
         $faker = \Faker\Factory::create('id_ID');
         $branches = Branch::all();
-        $roles = JobRole::all();
+        $roles = JobRole::query()
+            ->whereNotIn('code', ['ABH01', 'RBH01'])
+            ->get();
         $areas = ['DKI1', 'DKI2', 'JABAR', 'JATIM', 'SUMATERA', 'KALIMANTAN'];
         $regions = ['DKI JABAR PRIME FLEET', 'JATKALBAL', 'SUMATERA'];
 
         for ($i = 0; $i < 200; $i++) {
             $branch = $branches->random();
             $role = $roles->random();
-            $area = $faker->randomElement($areas);
-            $region = $faker->randomElement($regions);
+            $area = $branch->areaRelation?->nama_area ?? $branch->area ?? $faker->randomElement($areas);
+            $region = $branch->regionRelation?->nama_region ?? $branch->region ?? $faker->randomElement($regions);
 
             Employee::create([
                 'nrp' => (string)$faker->unique()->numberBetween(100000, 999999),
                 'full_name' => $faker->name,
+                'nama_lengkap' => $faker->name,
                 'position_name' => $role->name,
                 'job_role_id' => $role->id,
                 'branch_id' => $branch->id,

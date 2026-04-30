@@ -8,17 +8,35 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (! Schema::hasTable('batches')) {
+            return;
+        }
+
         Schema::table('batches', function (Blueprint $table) {
-            $table->renameColumn('evaluation_notes', 'description');
-            $table->longText('evaluation')->nullable();
+            if (Schema::hasColumn('batches', 'evaluation_notes') && ! Schema::hasColumn('batches', 'description')) {
+                $table->renameColumn('evaluation_notes', 'description');
+            }
+
+            if (! Schema::hasColumn('batches', 'evaluation')) {
+                $table->longText('evaluation')->nullable();
+            }
         });
     }
 
     public function down(): void
     {
+        if (! Schema::hasTable('batches')) {
+            return;
+        }
+
         Schema::table('batches', function (Blueprint $table) {
-            $table->renameColumn('description', 'evaluation_notes');
-            $table->dropColumn('evaluation');
+            if (Schema::hasColumn('batches', 'description') && ! Schema::hasColumn('batches', 'evaluation_notes')) {
+                $table->renameColumn('description', 'evaluation_notes');
+            }
+
+            if (Schema::hasColumn('batches', 'evaluation')) {
+                $table->dropColumn('evaluation');
+            }
         });
     }
 };

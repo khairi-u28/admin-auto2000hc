@@ -23,12 +23,14 @@ return new class extends Migration
             $table->enum('type', ['HO', 'Cabang']);
             $table->foreignUuid('competency_id')->constrained('competencies');
             $table->foreignUuid('branch_id')->nullable()->constrained('branches')->nullOnDelete();
+            $table->string('area_penyelenggara')->nullable();
             $table->foreignId('pic_id')->constrained('users');
             $table->date('start_date');
             $table->date('end_date');
             $table->unsignedSmallInteger('target_participants')->default(30);
-            $table->enum('status', ['draft', 'open', 'berlangsung', 'selesai', 'dibatalkan'])->default('draft');
-            $table->longText('evaluation_notes')->nullable();
+            $table->enum('status', ['draft', 'open', 'berlangsung', 'selesai', 'dibatalkan', 'pendaftaran', 'berjalan'])->default('draft');
+            $table->longText('description')->nullable();
+            $table->longText('evaluation')->nullable();
             $table->foreignId('created_by')->constrained('users');
             $table->timestamps();
         });
@@ -40,7 +42,7 @@ return new class extends Migration
             $table->foreignUuid('employee_id')->constrained('employees')->cascadeOnDelete();
             $table->enum('status', [
                 'menunggu_undangan', 'diundang', 'terdaftar', 'sedang_berjalan',
-                'selesai', 'terlambat', 'lulus', 'tidak_lulus',
+                'selesai', 'terlambat', 'lulus', 'tidak_lulus', 'berlangsung',
             ])->default('menunggu_undangan');
             $table->text('participant_notes')->nullable();
             $table->timestamp('invitation_sent_at')->nullable();

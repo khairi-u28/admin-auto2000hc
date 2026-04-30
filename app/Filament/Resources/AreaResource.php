@@ -8,6 +8,8 @@ use App\Filament\Resources\AreaResource\Pages\ListAreas;
 use App\Filament\Resources\AreaResource\Pages\ViewArea;
 use App\Filament\Resources\AreaResource\RelationManagers\BranchesRelationManager;
 use App\Models\Area;
+use App\Models\Branch;
+use App\Models\Employee;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
@@ -73,6 +75,20 @@ class AreaResource extends Resource
                             ->label('Region'),
                         TextEntry::make('nama_abh')
                             ->label('Nama ABH')
+                            ->state(function (Area $record): ?string {
+                                if (filled($record->nama_abh)) {
+                                    return $record->nama_abh;
+                                }
+
+                                return Employee::query()
+                                    ->where('area', $record->nama_area)
+                                    ->whereHas('jobRole', fn ($q) => $q->where('code', 'ABH01'))
+                                    ->value('nama_lengkap')
+                                    ?? Employee::query()
+                                        ->where('area', $record->nama_area)
+                                        ->whereHas('jobRole', fn ($q) => $q->where('code', 'ABH01'))
+                                        ->value('full_name');
+                            })
                             ->placeholder('-'),
                     ]),
             ]);
@@ -94,14 +110,27 @@ class AreaResource extends Resource
                 TextColumn::make('nama_abh')
                     ->label('Nama ABH')
                     ->searchable()
+                    ->getStateUsing(function (Area $record): ?string {
+                        if (filled($record->nama_abh)) {
+                            return $record->nama_abh;
+                        }
+
+                        return Employee::query()
+                            ->where('area', $record->nama_area)
+                            ->whereHas('jobRole', fn ($q) => $q->where('code', 'ABH01'))
+                            ->value('nama_lengkap')
+                            ?? Employee::query()
+                                ->where('area', $record->nama_area)
+                                ->whereHas('jobRole', fn ($q) => $q->where('code', 'ABH01'))
+                                ->value('full_name');
+                    })
                     ->toggleable(),
                 TextColumn::make('branches_count')
                     ->label('Jml. Cabang')
-                    ->getStateUsing(fn (Area $record) => 
-                        $record->branches_count > 0 
-                            ? $record->branches_count 
-                            : \App\Models\Branch::where('area', $record->nama_area)->count()
-                    )
+                    ->getStateUsing(fn (Area $record): int => Branch::query()
+                        ->where('area_id', $record->getKey())
+                        ->orWhere('area', $record->nama_area)
+                        ->count())
                     ->sortable(),
             ])
             ->recordUrl(fn (Area $record): string => static::getUrl('view', ['record' => $record]))

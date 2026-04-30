@@ -2,16 +2,27 @@
 
 namespace App\Filament\Resources\AreaResource\RelationManagers;
 
+use App\Models\Branch;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class BranchesRelationManager extends RelationManager
 {
     protected static string $relationship = 'branches';
 
     protected static ?string $title = 'Daftar Cabang';
+
+    protected function getTableQuery(): Builder
+    {
+        $area = $this->getOwnerRecord();
+
+        return Branch::query()
+            ->where('area_id', $area->getKey())
+            ->orWhere('area', $area->nama_area);
+    }
 
     public function form(Schema $schema): Schema
     {

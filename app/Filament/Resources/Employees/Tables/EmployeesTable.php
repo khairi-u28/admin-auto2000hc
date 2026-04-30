@@ -54,7 +54,27 @@ class EmployeesTable
                 TextColumn::make('masa_bakti')
                     ->label('Masa Bakti')
                     ->sortable()
-                    ->getStateUsing(fn ($record) => $record->entry_date ? Carbon::parse($record->entry_date)->diffAsCarbonInterval(Carbon::now())->format('%y tahun %m bulan') : '-'),
+                    ->getStateUsing(function ($record): string {
+                        $entryDate = $record->entry_date;
+
+                        if (! $entryDate) {
+                            return filled($record->masa_bakti) ? (string) $record->masa_bakti : '-';
+                        }
+
+                        $entry = $entryDate instanceof \Carbon\CarbonInterface
+                            ? $entryDate
+                            : Carbon::parse($entryDate);
+
+                        $now = Carbon::now();
+
+                        if ($entry->greaterThan($now)) {
+                            return '0 tahun 0 bulan';
+                        }
+
+                        $diff = $entry->diff($now);
+
+                        return "{$diff->y} tahun {$diff->m} bulan";
+                    }),
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()

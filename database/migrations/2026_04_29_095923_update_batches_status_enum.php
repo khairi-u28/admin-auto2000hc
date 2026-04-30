@@ -9,6 +9,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (! Schema::hasTable('batches') || ! Schema::hasTable('batch_participants')) {
+            return;
+        }
+
         // Add 'pendaftaran' and 'berjalan' to batches status
         DB::statement("ALTER TABLE batches MODIFY COLUMN status ENUM('draft', 'open', 'berlangsung', 'selesai', 'dibatalkan', 'pendaftaran', 'berjalan') DEFAULT 'draft'");
         
@@ -18,6 +22,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::hasTable('batches') || ! Schema::hasTable('batch_participants')) {
+            return;
+        }
+
         DB::statement("ALTER TABLE batches MODIFY COLUMN status ENUM('draft', 'open', 'berlangsung', 'selesai', 'dibatalkan') DEFAULT 'draft'");
         DB::statement("ALTER TABLE batch_participants MODIFY COLUMN status ENUM('menunggu_undangan', 'diundang', 'terdaftar', 'sedang_berjalan', 'selesai', 'terlambat', 'lulus', 'tidak_lulus') DEFAULT 'menunggu_undangan'");
     }

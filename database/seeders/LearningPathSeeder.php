@@ -12,7 +12,11 @@ class LearningPathSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = User::where('email', 'admin@auto2000.co.id')->first();
+        $admin = User::query()
+            ->whereIn('email', ['admin@auto2000hc.id', 'admin@auto2000.co.id'])
+            ->orderByRaw("FIELD(email, 'admin@auto2000hc.id', 'admin@auto2000.co.id')")
+            ->first()
+            ?? User::query()->orderBy('id')->first();
 
         if (! $admin) {
             $this->command->warn('Admin user not found; skipping LearningPathSeeder.');

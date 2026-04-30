@@ -22,15 +22,18 @@ class CreateJobRole extends CreateRecord
         }
 
         $createdBy = Auth::id()
-            ?? Auth::user()?->getKey()
-            ?? User::where('email', 'admin@auto2000.co.id')->value('id');
+            ?? Auth::user()?->id
+            ?? User::query()
+                ->whereIn('email', ['admin@auto2000hc.id', 'admin@auto2000.co.id'])
+                ->orderByRaw("FIELD(email, 'admin@auto2000hc.id', 'admin@auto2000.co.id')")
+                ->value('id');
 
         if (! $createdBy) {
             return;
         }
 
         LearningPath::firstOrCreate(
-            ['job_role_id' => $jobRole->getKey()],
+            ['job_role_id' => $jobRole->id],
             [
                 'name' => $jobRole->name . ' Path',
                 'description' => 'Learning path untuk jabatan ' . $jobRole->name . '.',

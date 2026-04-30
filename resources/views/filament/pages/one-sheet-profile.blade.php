@@ -194,7 +194,7 @@
                                     <span style="color: var(--text-title);">{{ $pct }}%</span>
                                 </div>
                                 <div style="height: 0.625rem; width: 100%; background: var(--bg-item); border-radius: 999px; overflow: hidden; border: 1px solid var(--border-item);">
-                                    <div style="height: 100%; border-radius: 999px; background: #1A3A5C; transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); width: {{ $pct }}%;"></div>
+                                    <div style="--bar-width: {{ $pct }}%; height: 100%; border-radius: 999px; background: #1A3A5C; transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); width: var(--bar-width);"></div>
                                 </div>
                                 <div style="font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Status: {{ str_replace('_', ' ', $training->status) }}</div>
                             </div>
@@ -207,5 +207,4 @@
         </div>
     </div>
 </x-filament-panels::page>
-
 

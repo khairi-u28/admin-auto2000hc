@@ -43,7 +43,7 @@
                 <span style="color:#64748b;">{{ $regionRow['rate'] }}%</span>
               </div>
               <div style="width:100%;background:#f3f4f6;border-radius:999px;height:0.75rem;overflow:hidden;">
-                <div style="width: {{ $regionRow['rate'] }}%;background:#1A3A5C;height:0.75rem;border-radius:999px;"></div>
+                <div style="--bar-width: {{ $regionRow['rate'] }}%; width: var(--bar-width); background:#1A3A5C;height:0.75rem;border-radius:999px;"></div>
               </div>
             </div>
           @endforeach
@@ -77,7 +77,7 @@
               <span>{{ number_format(($competency['avg_level'] / 3) * 100, 1) }}% completion</span>
             </div>
             <div style="width:100%;background:#f3f4f6;border-radius:999px;height:0.5rem;overflow:hidden;">
-              <div style="width: {{ ($competency['avg_level'] / 3) * 100 }}%;background:#10B981;height:0.5rem;border-radius:999px;"></div>
+              <div style="--bar-width: {{ ($competency['avg_level'] / 3) * 100 }}%; width: var(--bar-width); background:#10B981;height:0.5rem;border-radius:999px;"></div>
             </div>
           </div>
         @endforeach
@@ -92,7 +92,7 @@
             <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;margin-bottom:0.5rem;">{{ $point['label'] }}</div>
             <div style="font-size:2rem;font-weight:700;color:#0f172a;margin-bottom:0.75rem;">{{ $point['value'] }}</div>
             <div style="width:100%;background:#f3f4f6;border-radius:999px;height:0.5rem;overflow:hidden;">
-              <div style="width: {{ round(($point['value'] / $maxMonthly) * 100, 1) }}%;background:#1B7A4E;height:0.5rem;border-radius:999px;"></div>
+              <div style="--bar-width: {{ round(($point['value'] / $maxMonthly) * 100, 1) }}%; width: var(--bar-width); background:#1B7A4E;height:0.5rem;border-radius:999px;"></div>
             </div>
           </div>
         @endforeach
@@ -105,5 +105,4 @@
     </div>
   </div>
 </x-filament-panels::page>
-
 

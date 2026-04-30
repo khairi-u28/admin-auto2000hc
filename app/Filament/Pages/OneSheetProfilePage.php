@@ -4,6 +4,8 @@ namespace App\Filament\Pages;
 
 use App\Models\Employee;
 use Filament\Pages\Page;
+use Filament\Tables;
+use Filament\Tables\Table;
 
 class OneSheetProfilePage extends Page
 {
@@ -33,5 +35,25 @@ class OneSheetProfilePage extends Page
     public function getView(): string
     {
         return 'filament.pages.one-sheet-profile';
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->query(
+                // Jika menggunakan relasi ke batch/sesi
+                \App\Models\BatchParticipant::query()->where('employee_id', $this->record->id)
+            )
+            ->columns([
+                Tables\Columns\TextColumn::make('created_at') // Atau field tanggal yang sesuai
+                    ->label('Tgl Training')
+                    ->date('d M Y'),
+                Tables\Columns\TextColumn::make('batch.name') // Pastikan ada relasi ke tabel Batch
+                    ->label('Nama Training')
+                    ->description(fn($record) => $record->batch->type ?? 'Training Cabang'),
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
+                    ->badge(),
+            ]);
     }
 }

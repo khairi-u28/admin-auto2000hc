@@ -7,6 +7,7 @@ use App\Filament\Resources\RegionResource\Pages\EditRegion;
 use App\Filament\Resources\RegionResource\Pages\ListRegions;
 use App\Filament\Resources\RegionResource\Pages\ViewRegion;
 use App\Filament\Resources\RegionResource\RelationManagers\AreasRelationManager;
+use App\Models\Employee;
 use App\Models\Region;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
@@ -64,6 +65,20 @@ class RegionResource extends Resource
                             ->label('Nama Region'),
                         TextEntry::make('nama_rbh')
                             ->label('Nama RBH')
+                            ->state(function (Region $record): ?string {
+                                if (filled($record->nama_rbh)) {
+                                    return $record->nama_rbh;
+                                }
+
+                                return Employee::query()
+                                    ->where('region', $record->nama_region)
+                                    ->whereHas('jobRole', fn ($q) => $q->where('code', 'RBH01'))
+                                    ->value('nama_lengkap')
+                                    ?? Employee::query()
+                                        ->where('region', $record->nama_region)
+                                        ->whereHas('jobRole', fn ($q) => $q->where('code', 'RBH01'))
+                                        ->value('full_name');
+                            })
                             ->placeholder('-'),
                     ]),
                 Section::make('Ringkasan')
@@ -94,6 +109,20 @@ class RegionResource extends Resource
                 TextColumn::make('nama_rbh')
                     ->label('Nama RBH')
                     ->searchable()
+                    ->getStateUsing(function (Region $record): ?string {
+                        if (filled($record->nama_rbh)) {
+                            return $record->nama_rbh;
+                        }
+
+                        return Employee::query()
+                            ->where('region', $record->nama_region)
+                            ->whereHas('jobRole', fn ($q) => $q->where('code', 'RBH01'))
+                            ->value('nama_lengkap')
+                            ?? Employee::query()
+                                ->where('region', $record->nama_region)
+                                ->whereHas('jobRole', fn ($q) => $q->where('code', 'RBH01'))
+                                ->value('full_name');
+                    })
                     ->toggleable(),
                 TextColumn::make('areas_count')
                     ->label('Jml. Area')

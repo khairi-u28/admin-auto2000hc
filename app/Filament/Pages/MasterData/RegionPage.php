@@ -36,7 +36,8 @@ class RegionPage extends Page
 
     public function getRegionData(): array
     {
-        return Region::select('regions.nama_region as region', 'regions.nama_rbh as nama_rbh')
+        return Region::select('regions.nama_region as region')
+            ->selectRaw('COALESCE(regions.nama_rbh, MAX(CASE WHEN job_roles.code = "RBH01" THEN employees.full_name END)) as nama_rbh')
             ->selectRaw('COUNT(DISTINCT areas.id) as total_area')
             ->selectRaw('COUNT(DISTINCT branches.id) as total_cabang')
             ->selectRaw('COUNT(DISTINCT employees.id) as total_karyawan')
@@ -45,7 +46,8 @@ class RegionPage extends Page
             ->leftJoin('areas', 'regions.id', '=', 'areas.region_id')
             ->leftJoin('branches', 'areas.id', '=', 'branches.area_id')
             ->leftJoin('employees', 'branches.id', '=', 'employees.branch_id')
-            ->groupBy('regions.id', 'regions.nama_rbh')
+            ->leftJoin('job_roles', 'job_roles.id', '=', 'employees.job_role_id')
+            ->groupBy('regions.id', 'regions.nama_region', 'regions.nama_rbh')
             ->orderBy('regions.nama_region')
             ->get()
             ->toArray();

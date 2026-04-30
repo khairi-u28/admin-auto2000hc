@@ -6,20 +6,20 @@
           <div style="font-size:0.875rem;font-weight:600;color:#0f172a;">{{ $region['name'] }}</div>
           <div style="font-size:0.75rem;color:#475569;">Karyawan Aktif: {{ number_format($region['active_employees']) }}</div>
         </div>
-        <div class="text-right">
+        <div style="text-align:right;">
           <div style="font-size:0.875rem;color:#0f172a;">Behavioral</div>
           <div style="font-size:1.125rem;font-weight:700;color:#0f172a;">{{ number_format($region['behavior'], 2) }}</div>
           <div style="font-size:0.75rem;color:#475569;">AUBO B+O: {{ $region['aubo'] }}</div>
         </div>
       </div>
 
-      <div class="mt-3">
+      <div style="margin-top:0.75rem;">
         <div style="font-size:0.875rem;font-weight:500;margin-bottom:0.5rem;">Status Enrollment</div>
         <div style="width:100%;background:#e2e8f0;height:0.75rem;border-radius:999px;overflow:hidden;display:flex;">
-          <div style="width: {{ $region['percentages']['menunggu_undangan'] }}%;background:#9ca3af;"></div>
-          <div style="width: {{ $region['percentages']['hadir'] }}%;background:#2563eb;"></div>
-          <div style="width: {{ $region['percentages']['lulus'] }}%;background:#16a34a;"></div>
-          <div style="width: {{ $region['percentages']['batal'] }}%;background:#dc2626;"></div>
+          <div style="--seg-width: {{ $region['percentages']['menunggu_undangan'] }}%; width: var(--seg-width); background:#9ca3af;"></div>
+          <div style="--seg-width: {{ $region['percentages']['hadir'] }}%; width: var(--seg-width); background:#2563eb;"></div>
+          <div style="--seg-width: {{ $region['percentages']['lulus'] }}%; width: var(--seg-width); background:#16a34a;"></div>
+          <div style="--seg-width: {{ $region['percentages']['batal'] }}%; width: var(--seg-width); background:#dc2626;"></div>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:#475569;margin-top:0.5rem;">
           <div>Not started: {{ $region['breakdown']['menunggu_undangan'] }}</div>
