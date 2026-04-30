@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\BatchParticipant;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -92,6 +93,21 @@ class Employee extends Model
     public function batchParticipants(): HasMany
     {
         return $this->hasMany(BatchParticipant::class);
+    }
+
+    public function batchParticipations(): HasMany
+    {
+        return $this->hasMany(BatchParticipant::class);
+    }
+
+    public function participantMateriProgress(): HasMany
+    {
+        return $this->hasMany(ParticipantMateriProgress::class);
+    }
+
+    public function batchFeedback(): HasMany
+    {
+        return $this->hasMany(BatchFeedback::class);
     }
 
     public function getNamaLengkapAttribute(): ?string

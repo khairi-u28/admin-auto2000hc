@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Batches\HO;
 use App\Filament\Resources\Batches\HO\Pages\CreateBatchHO;
 use App\Filament\Resources\Batches\HO\Pages\EditBatchHO;
 use App\Filament\Resources\Batches\HO\Pages\ListBatchHO;
+use App\Filament\Resources\Batches\RelationManagers\BatchEvaluationRelationManager;
 use App\Filament\Resources\Batches\RelationManagers\BatchFeedbackRelationManager;
 use App\Filament\Resources\Batches\RelationManagers\BatchMateriRelationManager;
 use App\Filament\Resources\Batches\RelationManagers\BatchParticipantsRelationManager;
@@ -57,6 +58,7 @@ class BatchHOResource extends Resource
             BatchParticipantsRelationManager::class,
             BatchMateriRelationManager::class,
             BatchFeedbackRelationManager::class,
+            BatchEvaluationRelationManager::class,
         ];
     }
 

@@ -16,9 +16,12 @@ class NasionalRegionPage extends Page implements HasTable
 {
     use InteractsWithTable;
 
-    protected string $view = 'filament.pages.nasional-region';
-
     protected static bool $shouldRegisterNavigation = false;
+
+    public function getView(): string
+    {
+        return 'filament.pages.nasional-region';
+    }
 
     public function mount(): void
     {

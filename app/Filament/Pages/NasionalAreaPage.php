@@ -16,9 +16,12 @@ class NasionalAreaPage extends Page implements HasTable
 {
     use InteractsWithTable;
 
-    protected string $view = 'filament.pages.nasional-area';
-
     protected static bool $shouldRegisterNavigation = false;
+
+    public function getView(): string
+    {
+        return 'filament.pages.nasional-area';
+    }
 
     protected function getTableQuery(): Builder
     {

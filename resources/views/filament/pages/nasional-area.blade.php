@@ -24,7 +24,7 @@
     </div>
     <div class="bg-white p-4 rounded shadow">
       <div class="text-sm text-gray-600">training Selesai</div>
-      <div class="text-2xl font-bold">{{ \DB::table('trainings')->join('employees','trainings.employee_id','=','employees.id')->where('employees.area',$area)->where('trainings.status','lulus')->count() }}</div>
+      <div class="text-2xl font-bold">{{ \DB::table('batch_participants')->join('employees','batch_participants.employee_id','=','employees.id')->where('employees.area',$area)->where('batch_participants.status','lulus')->count() }}</div>
     </div>
   </div>
 
@@ -37,7 +37,7 @@
           @foreach(\App\Models\Branch::where('area',$area)->get() as $b)
             @php
               $emp = \App\Models\Employee::where('branch_id',$b->id)->count();
-              $completed = \DB::table('trainings')->join('employees','trainings.employee_id','=','employees.id')->where('employees.branch_id',$b->id)->where('trainings.status','lulus')->count();
+              $completed = \DB::table('batch_participants')->join('employees','batch_participants.employee_id','=','employees.id')->where('employees.branch_id',$b->id)->where('batch_participants.status','lulus')->count();
               $pct = $emp ? round($completed / $emp * 100,1) : 0;
             @endphp
             <tr>

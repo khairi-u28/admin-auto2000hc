@@ -6,9 +6,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 
 class LearningPathsTable
 {
@@ -16,29 +13,24 @@ class LearningPathsTable
     {
         return $table
             ->columns([
-                TextColumn::make('name')
-                    ->label('Nama')
+                TextColumn::make('jobRole.code')
+                    ->label('Kode')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('jobRole.name')
-                    ->label('Jabatan')
+                    ->label('Nama Jabatan')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('status')
-                    ->label('Status')
-                    ->badge()
-                    ->colors([
-                        'primary' => 'draft',
-                        'success' => 'published',
-                        'danger' => 'archived',
-                    ]),
+                TextColumn::make('jobRole.department')
+                    ->label('Departemen')
+                    ->sortable(),
+                TextColumn::make('jobRole.level')
+                    ->label('Level')
+                    ->sortable(),
                 TextColumn::make('competencies_count')
-                    ->label('Total Kompetensi')
+                    ->label('Jml Kompetensi')
                     ->counts('competencies')
                     ->sortable(),
-                TextColumn::make('createdBy.name')
-                    ->label('Dibuat Oleh')
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('job_role_id')
@@ -56,12 +48,6 @@ class LearningPathsTable
             ])
             ->actions([
                 EditAction::make(),
-                DeleteAction::make(),
-            ])
-            ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
             ]);
     }
 }

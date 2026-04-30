@@ -44,7 +44,7 @@ class BatchSchemas
                         ->required(),
                     Select::make('branch_id')
                         ->label('Cabang Penyelenggara')
-                        ->relationship('branch', 'nama')
+                        ->relationship('branch', 'name')
                         ->searchable()
                         ->preload()
                         ->required(fn () => $type === 'cabang')
@@ -60,12 +60,23 @@ class BatchSchemas
                         ->options([
                             'draft' => 'Draft',
                             'pendaftaran' => 'Pendaftaran',
+                            'open' => 'Open',
                             'berjalan' => 'Berjalan',
+                            'berlangsung' => 'Berlangsung',
                             'selesai' => 'Selesai',
                             'dibatalkan' => 'Dibatalkan',
                         ])
                         ->default('draft')
                         ->required(),
+                    Select::make('selected_module_id')
+                        ->label('Filter Silabus Modul')
+                        ->options(fn ($get) => self::getSilabusOptions($get('id')))
+                        ->reactive()
+                        ->dehydrated(false)
+                        ->searchable()
+                        ->placeholder('Pilih modul untuk filter silabus')
+                        ->columnSpanFull()
+                        ->visible(fn ($get) => filled($get('id'))),
                     DatePicker::make('start_date')
                         ->label('Tanggal Mulai')
                         ->required(),
@@ -77,41 +88,54 @@ class BatchSchemas
                         ->numeric()
                         ->minValue(1)
                         ->required(),
-                    Textarea::make('evaluation_notes')
-                        ->label('Catatan Evaluasi')
+                    Textarea::make('description')
+                        ->label('Deskripsi')
                         ->columnSpanFull(),
                 ]),
         ]);
     }
 
+    protected static function getSilabusOptions(?string $batchId): array
+    {
+        if (! $batchId) {
+            return [];
+        }
+
+        return Batch::with('materi.module')
+            ->find($batchId)
+            ?->materi
+            ->mapWithKeys(fn ($materi) => [
+                $materi->module_id => $materi->module?->title ?? 'Tanpa Modul',
+            ])
+            ->unique()
+            ->toArray() ?? [];
+    }
+
     public static function table(Table $table, string $type): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->with(['pic', 'competency', 'participants']))
             ->columns([
                 TextColumn::make('batch_code')
-                    ->label('Kode')
+                    ->label('Kode Batch')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('name')
-                    ->label('Nama')
+                    ->label('Nama Batch')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('competency.name')
                     ->label('Kompetensi')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('branch.nama')
-                    ->label('Cabang')
-                    ->searchable()
-                    ->sortable()
-                    ->visible($type === 'cabang'),
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
                     ->colors([
                         'primary' => 'draft',
-                        'warning' => 'pendaftaran',
-                        'info' => 'berjalan',
+                        'warning' => ['pendaftaran', 'berlangsung'],
+                        'info' => 'open',
+                        'secondary' => 'berjalan',
                         'success' => 'selesai',
                         'danger' => 'dibatalkan',
                     ]),
@@ -119,9 +143,19 @@ class BatchSchemas
                     ->label('Mulai')
                     ->date('d M Y')
                     ->sortable(),
-                TextColumn::make('target_participants')
+                TextColumn::make('end_date')
+                    ->label('Selesai')
+                    ->date('d M Y')
+                    ->sortable(),
+                TextColumn::make('participants_summary')
                     ->label('Peserta (Aktual/Target)')
-                    ->state(fn (Batch $record): string => "{$record->aktual_peserta} / {$record->target_participants}"),
+                    ->state(fn (Batch $record): string => 
+                        ($record->actual_participants_count ?? 0) . ' / ' . ($record->target_participants ?? 0)
+                    ),
+                TextColumn::make('pic.name')
+                    ->label('PIC')
+                    ->searchable()
+                    ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('competency_id')
@@ -134,7 +168,9 @@ class BatchSchemas
                     ->options([
                         'draft' => 'Draft',
                         'pendaftaran' => 'Pendaftaran',
+                        'open' => 'Open',
                         'berjalan' => 'Berjalan',
+                        'berlangsung' => 'Berlangsung',
                         'selesai' => 'Selesai',
                         'dibatalkan' => 'Dibatalkan',
                     ]),

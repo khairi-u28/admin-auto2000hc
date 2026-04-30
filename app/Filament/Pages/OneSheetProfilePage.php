@@ -21,7 +21,7 @@ class OneSheetProfilePage extends Page
             'branch',
             'trainingRecords.competency',
             'developmentPrograms',
-            'batch_participants.batch.competency',
+            'batchParticipants.batch.competency',
         ])->findOrFail($id);
     }
 
@@ -35,6 +35,3 @@ class OneSheetProfilePage extends Page
         return 'filament.pages.one-sheet-profile';
     }
 }
-
-
-

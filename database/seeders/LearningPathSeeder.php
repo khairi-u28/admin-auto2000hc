@@ -78,5 +78,17 @@ class LearningPathSeeder extends Seeder
                 $path->competencies()->syncWithoutDetaching($competencyIds);
             }
         }
+
+        foreach (JobRole::all() as $jobRole) {
+            LearningPath::firstOrCreate(
+                ['job_role_id' => $jobRole->id],
+                [
+                    'name' => $jobRole->name . ' Path',
+                    'description' => 'Learning path untuk jabatan ' . $jobRole->name . '.',
+                    'status' => 'draft',
+                    'created_by' => $admin->id,
+                ]
+            );
+        }
     }
 }

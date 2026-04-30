@@ -13,7 +13,20 @@ class EditBatchHO extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('save')
+                ->label('Simpan Perubahan')
+                ->color('primary')
+                ->action('save'),
+            Actions\Action::make('cancel')
+                ->label('Batal')
+                ->color('secondary')
+                ->url($this->getResource()::getUrl('index')),
             Actions\DeleteAction::make(),
         ];
+    }
+
+    protected function getFormActions(): array
+    {
+        return [];
     }
 }

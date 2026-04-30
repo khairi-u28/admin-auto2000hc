@@ -9,7 +9,7 @@ use App\Filament\Resources\Employees\Schemas\EmployeeForm;
 use App\Filament\Resources\Employees\Tables\EmployeesTable;
 use App\Filament\Resources\Employees\RelationManagers\TrainingRecordsRelationManager;
 use App\Filament\Resources\Employees\RelationManagers\DevelopmentProgramsRelationManager;
-use App\Filament\Resources\Employees\RelationManagers\BatchParticipantsRelationManager;
+use App\Filament\Resources\Employees\RelationManagers\BatchParticipationsRelationManager;
 use App\Filament\Resources\Employees\RelationManagers\SesiPesertaRelationManager;
 use App\Models\Employee;
 use BackedEnum;
@@ -24,7 +24,7 @@ class EmployeeResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-users';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 5;
 
     protected static ?string $modelLabel = 'Karyawan';
 
@@ -63,7 +63,7 @@ class EmployeeResource extends Resource
     public static function getRelations(): array
     {
         return [
-            BatchParticipantsRelationManager::class,
+            BatchParticipationsRelationManager::class,
             TrainingRecordsRelationManager::class,
             DevelopmentProgramsRelationManager::class,
             SesiPesertaRelationManager::class,

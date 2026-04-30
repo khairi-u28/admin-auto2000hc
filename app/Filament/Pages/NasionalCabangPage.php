@@ -16,9 +16,12 @@ class NasionalCabangPage extends Page implements HasTable
 {
     use InteractsWithTable;
 
-    protected string $view = 'filament.pages.nasional-cabang';
-
     protected static bool $shouldRegisterNavigation = false;
+
+    public function getView(): string
+    {
+        return 'filament.pages.nasional-cabang';
+    }
 
     protected function getTableQuery(): Builder
     {

@@ -23,6 +23,8 @@ class RegionResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-globe-asia-australia';
 
+    protected static ?string $navigationLabel = 'Region';
+
     protected static ?int $navigationSort = 1;
 
     protected static ?string $modelLabel = 'Region';

@@ -23,7 +23,8 @@ class Batch extends Model
         'end_date',
         'target_participants',
         'status',
-        'evaluation_notes',
+        'description',
+        'evaluation',
         'created_by',
     ];
 
@@ -55,14 +56,14 @@ class Batch extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function materi(): HasMany
+    {
+        return $this->hasMany(BatchMateri::class);
+    }
+
     public function participants(): HasMany
     {
         return $this->hasMany(BatchParticipant::class);
-    }
-
-    public function materi(): HasMany
-    {
-        return $this->hasMany(BatchMateri::class)->orderBy('order_index');
     }
 
     public function feedback(): HasMany
@@ -70,32 +71,26 @@ class Batch extends Model
         return $this->hasMany(BatchFeedback::class);
     }
 
-    public function participantProgress(): HasMany
+    public function evaluationRelation(): HasMany
     {
-        return $this->hasMany(ParticipantMateriProgress::class);
+        return $this->hasMany(Batch::class, 'id', 'id');
     }
 
-    /** Count of participants who have reached at least 'terdaftar' status */
-    public function getAktualPesertaAttribute(): int
+    public function getActualParticipantsCountAttribute(): int
     {
         return $this->participants()
             ->whereNotIn('status', ['menunggu_undangan', 'diundang'])
             ->count();
     }
 
-    /** Generate next batch code: BATCH-{TYPE}-{YEAR}-{seq:003} */
-    public static function generateCode(string $type, int $year): string
+    public static function generateCode(string $type): string
     {
-        $prefix = "BATCH-{$type}-{$year}-";
-        $lastSeq = static::where('batch_code', 'like', $prefix . '%')
-            ->orderBy('batch_code', 'desc')
+        $year = now()->year;
+        $prefix = "BATCH-{$type}-{$year}";
+        $last = static::where('batch_code', 'like', "{$prefix}-%")
+            ->orderByDesc('batch_code')
             ->value('batch_code');
-
-        $seq = 1;
-        if ($lastSeq) {
-            $seq = (int) substr($lastSeq, strlen($prefix)) + 1;
-        }
-
-        return $prefix . str_pad($seq, 3, '0', STR_PAD_LEFT);
+        $seq = $last ? (int) substr($last, -3) + 1 : 1;
+        return $prefix . '-' . str_pad($seq, 3, '0', STR_PAD_LEFT);
     }
 }

@@ -28,7 +28,7 @@ class CompetencyForm
                         ->maxLength(255),
                     TagsInput::make('tags')
                         ->label('Tags')
-                        ->options([
+                        ->suggestions([
                             'Sales' => 'Sales',
                             'Aftersales' => 'Aftersales',
                             'HO' => 'HO',

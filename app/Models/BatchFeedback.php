@@ -40,28 +40,26 @@ class BatchFeedback extends Model
     }
 
     /** Average training rating (1-5) across 4 rating dimensions */
-    public function getTrainingAvgAttribute(): ?float
+    public function getTrainingAvgAttribute(): float
     {
-        $values = array_filter([
+        $scores = array_filter([
             $this->training_relevance,
             $this->training_material_quality,
             $this->training_schedule,
             $this->training_facility,
         ]);
-
-        return count($values) > 0 ? round(array_sum($values) / count($values), 2) : null;
+        return count($scores) ? round(array_sum($scores) / count($scores), 1) : 0;
     }
 
     /** Average trainer rating (1-5) across 4 rating dimensions */
-    public function getTrainerAvgAttribute(): ?float
+    public function getTrainerAvgAttribute(): float
     {
-        $values = array_filter([
+        $scores = array_filter([
             $this->trainer_mastery,
             $this->trainer_delivery,
             $this->trainer_responsiveness,
             $this->trainer_attitude,
         ]);
-
-        return count($values) > 0 ? round(array_sum($values) / count($values), 2) : null;
+        return count($scores) ? round(array_sum($scores) / count($scores), 1) : 0;
     }
 }

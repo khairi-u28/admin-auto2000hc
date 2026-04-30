@@ -23,6 +23,8 @@ class CurriculumResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $modelLabel = 'Kurikulum';
 
     protected static ?string $pluralModelLabel = 'Kurikulum';

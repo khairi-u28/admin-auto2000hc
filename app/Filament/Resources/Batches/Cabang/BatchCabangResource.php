@@ -17,6 +17,8 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
+use App\Filament\Resources\Batches\RelationManagers\BatchEvaluationRelationManager;
+
 class BatchCabangResource extends Resource
 {
     protected static ?string $model = Batch::class;
@@ -57,6 +59,7 @@ class BatchCabangResource extends Resource
             BatchParticipantsRelationManager::class,
             BatchMateriRelationManager::class,
             BatchFeedbackRelationManager::class,
+            BatchEvaluationRelationManager::class,
         ];
     }
 

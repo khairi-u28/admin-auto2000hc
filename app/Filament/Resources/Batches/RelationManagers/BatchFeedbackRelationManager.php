@@ -53,20 +53,30 @@ class BatchFeedbackRelationManager extends RelationManager
             ->recordTitleAttribute('id')
             ->columns([
                 TextColumn::make('employee.full_name')
-                    ->label('Peserta')
+                    ->label('Nama Peserta')
                     ->searchable()
                     ->sortable(),
-                IconColumn::make('is_submitted')
-                    ->label('Submitted')
-                    ->boolean(),
+                TextColumn::make('is_submitted')
+                    ->label('Status')
+                    ->state(fn ($record) => $record->is_submitted ? 'Submitted' : 'Pending')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Submitted' => 'success',
+                        'Pending'   => 'warning',
+                        default     => 'secondary',
+                    }),
                 TextColumn::make('training_avg')
-                    ->label('Rata-rata Training')
+                    ->label('Rating Training')
                     ->numeric(1)
                     ->sortable(),
                 TextColumn::make('trainer_avg')
-                    ->label('Rata-rata Trainer')
+                    ->label('Rating Trainer')
                     ->numeric(1)
                     ->sortable(),
+                TextColumn::make('training_comments')
+                    ->label('Catatan')
+                    ->limit(30)
+                    ->wrap(),
             ])
             ->filters([
                 //

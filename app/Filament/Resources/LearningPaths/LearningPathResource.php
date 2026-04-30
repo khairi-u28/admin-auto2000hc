@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\LearningPaths;
 
-use App\Filament\Resources\LearningPaths\Pages\CreateLearningPath;
 use App\Filament\Resources\LearningPaths\Pages\EditLearningPath;
 use App\Filament\Resources\LearningPaths\Pages\ListLearningPaths;
 use App\Filament\Resources\LearningPaths\RelationManagers\CompetenciesRelationManager;
@@ -29,6 +28,16 @@ class LearningPathResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return false;
+    }
+
     public static function getNavigationGroup(): ?string
     {
         return 'Learning Management';
@@ -54,9 +63,8 @@ class LearningPathResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListLearningPaths::route('/'),
-            'create' => CreateLearningPath::route('/create'),
-            'edit'   => EditLearningPath::route('/{record}/edit'),
+            'index' => ListLearningPaths::route('/'),
+            'edit'  => EditLearningPath::route('/{record}/edit'),
         ];
     }
 }

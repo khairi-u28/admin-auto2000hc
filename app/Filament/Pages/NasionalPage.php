@@ -22,15 +22,24 @@ class NasionalPage extends Page implements HasTable
 {
     use InteractsWithTable;
     
-    protected string $view = 'filament.pages.nasional';
-
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-globe-asia-australia';
-
-    protected static ?int $navigationSort = 1;
-
     public static function getNavigationGroup(): ?string
     {
         return 'Laporan';
+    }
+
+    public static function getNavigationIcon(): Heroicon|string|null
+    {
+        return 'heroicon-o-globe-asia-australia';
+    }
+
+    public static function getNavigationSort(): ?int
+    {
+        return 1;
+    }
+
+    public function getView(): string
+    {
+        return 'filament.pages.nasional';
     }
 
     public function getNationalStats(): array

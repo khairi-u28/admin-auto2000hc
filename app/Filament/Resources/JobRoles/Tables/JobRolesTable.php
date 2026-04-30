@@ -37,12 +37,9 @@ class JobRolesTable
                 TextColumn::make('level')
                     ->label('Level')
                     ->sortable(),
-                TextColumn::make('category')
-                    ->label('Kategori')
-                    ->sortable(),
-                TextColumn::make('competency_requirements_count')
-                    ->label('Jml. Kompetensi')
-                    ->counts('competencyRequirements')
+                TextColumn::make('employees_count')
+                    ->label('Jml Pejabat')
+                    ->counts('employees')
                     ->sortable(),
             ])
             ->filters([

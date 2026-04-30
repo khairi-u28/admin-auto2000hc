@@ -20,7 +20,7 @@ class BatchMateriRelationManager extends RelationManager
 
     protected static ?string $recordTitleAttribute = 'id';
 
-    protected static ?string $title = 'Materi & Sesi';
+    protected static ?string $title = 'Silabus';
 
     public function form(Schema $schema): Schema
     {
@@ -31,7 +31,7 @@ class BatchMateriRelationManager extends RelationManager
                     ->searchable()
                     ->preload(),
                 Select::make('course_id')
-                    ->label('Materi (Course)')
+                    ->label('Materi')
                     ->relationship('course', 'title')
                     ->searchable()
                     ->preload()
@@ -79,11 +79,11 @@ class BatchMateriRelationManager extends RelationManager
                     ->sortable(),
                 TextColumn::make('session_venue')
                     ->label('Lokasi')
-                    ->limit(20)
-                    ->tooltip(function (TextColumn $column): ?string {
-                        $state = $column->getState();
-                        return strlen($state) > 20 ? $state : null;
-                    }),
+                    ->limit(20),
+                TextColumn::make('session_notes')
+                    ->label('Catatan')
+                    ->limit(30)
+                    ->wrap(),
             ])
             ->defaultSort('order_index', 'asc')
             ->filters([

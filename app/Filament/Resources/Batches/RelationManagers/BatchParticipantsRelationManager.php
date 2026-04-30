@@ -60,8 +60,12 @@ class BatchParticipantsRelationManager extends RelationManager
                 TextColumn::make('employee.nrp')
                     ->label('NRP')
                     ->searchable(),
+                TextColumn::make('employee.branch.kode_cabang')
+                    ->label('Kode Cabang')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('employee.branch.nama')
-                    ->label('Cabang')
+                    ->label('Nama Cabang')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('status')

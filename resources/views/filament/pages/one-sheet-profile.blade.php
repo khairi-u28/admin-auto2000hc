@@ -166,15 +166,25 @@
                 {{-- Digital Learning Progress --}}
                 <x-filament::section heading="Digital Learning" icon="heroicon-o-presentation-chart-line">
                     <div style="display: flex; flex-direction: column; gap: 1.5rem; padding: 0.5rem 0;">
-                        @forelse($this->employee->trainings as $training)
+                        @forelse($this->employee->batchParticipants as $training)
+                            @php
+                                $pct = match($training->status) {
+                                    'lulus' => 100,
+                                    'hadir' => 75,
+                                    'berlangsung' => 40,
+                                    'diundang' => 10,
+                                    default => 0,
+                                };
+                            @endphp
                             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                                 <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">
-                                    <span style="color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; max-width: 160px; white-space: nowrap;">{{ $training->curriculum?->title }}</span>
-                                    <span style="color: var(--text-title);">{{ $training->progress_pct }}%</span>
+                                    <span style="color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; max-width: 160px; white-space: nowrap;">{{ $training->batch?->name ?? $training->batch?->competency?->name }}</span>
+                                    <span style="color: var(--text-title);">{{ $pct }}%</span>
                                 </div>
                                 <div style="height: 0.625rem; width: 100%; background: var(--bg-item); border-radius: 999px; overflow: hidden; border: 1px solid var(--border-item);">
-                                    <div style="height: 100%; border-radius: 999px; background: #1A3A5C; transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); width: {{ $training->progress_pct }}%;"></div>
+                                    <div style="height: 100%; border-radius: 999px; background: #1A3A5C; transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); width: {{ $pct }}%;"></div>
                                 </div>
+                                <div style="font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Status: {{ str_replace('_', ' ', $training->status) }}</div>
                             </div>
                         @empty
                             <p style="text-align: center; font-size: 0.875rem; color: var(--text-dim);">Tidak ada riwayat.</p>

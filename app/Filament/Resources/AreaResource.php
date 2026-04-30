@@ -24,6 +24,8 @@ class AreaResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-map-pin';
 
+    protected static ?string $navigationLabel = 'Area';
+
     protected static ?int $navigationSort = 2;
 
     protected static ?string $modelLabel = 'Area';
@@ -95,6 +97,11 @@ class AreaResource extends Resource
                     ->toggleable(),
                 TextColumn::make('branches_count')
                     ->label('Jml. Cabang')
+                    ->getStateUsing(fn (Area $record) => 
+                        $record->branches_count > 0 
+                            ? $record->branches_count 
+                            : \App\Models\Branch::where('area', $record->nama_area)->count()
+                    )
                     ->sortable(),
             ])
             ->recordUrl(fn (Area $record): string => static::getUrl('view', ['record' => $record]))
