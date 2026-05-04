@@ -18,7 +18,7 @@ class BatchParticipantsRelationManager extends RelationManager
 
     protected static ?string $recordTitleAttribute = 'employee_id';
 
-    protected static ?string $title = 'Peserta Batch';
+    protected static ?string $title = 'Peserta';
 
     public function form(Schema $schema): Schema
     {

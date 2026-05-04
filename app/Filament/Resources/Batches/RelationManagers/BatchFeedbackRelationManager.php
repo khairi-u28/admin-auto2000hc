@@ -18,7 +18,7 @@ class BatchFeedbackRelationManager extends RelationManager
 
     protected static ?string $recordTitleAttribute = 'id';
 
-    protected static ?string $title = 'Evaluasi & Feedback';
+    protected static ?string $title = 'Feedback';
 
     public function form(Schema $schema): Schema
     {

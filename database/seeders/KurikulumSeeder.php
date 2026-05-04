@@ -82,7 +82,13 @@ class KurikulumSeeder extends Seeder
                     );
 
                     // Link course to module
-                    $module->courses()->syncWithoutDetaching([$course->id]);
+                    $module->courses()->syncWithoutDetaching([
+                        $course->id => [
+                            'id' => (string) Str::uuid(),
+                            'order_index' => $j,
+                            'is_mandatory' => true,
+                        ],
+                    ]);
                 }
             }
         }

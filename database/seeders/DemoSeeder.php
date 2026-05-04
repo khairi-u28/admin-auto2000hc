@@ -32,7 +32,7 @@ class DemoSeeder extends Seeder
 
         $employees = Employee::all();
         $competencies = Competency::all();
-        $branches = Branch::where('type', 'cabang')->get();
+        $branches = Branch::where('type', '!=', 'HO')->get();
         $users = User::all();
         $modules = Module::all();
         $courses = Course::all();
@@ -46,18 +46,21 @@ class DemoSeeder extends Seeder
             $type = $faker->randomElement(['HO', 'Cabang']);
             $status = $faker->randomElement(['draft', 'open', 'berlangsung', 'selesai', 'dibatalkan']);
             $comp = $competencies->random();
+            $branchForCabang = $type === 'Cabang' ? ($branches->isNotEmpty() ? $branches->random() : null) : null;
             
             $batch = Batch::create([
                 'batch_code' => 'BATCH-' . strtoupper($faker->bothify('??###')),
                 'name' => 'Training ' . $comp->name . ' Batch ' . ($i + 1),
                 'type' => $type,
                 'competency_id' => $comp->id,
-                'branch_id' => $type === 'Cabang' ? ($branches->isNotEmpty() ? $branches->random()->id : null) : null,
+                'branch_id' => $branchForCabang?->id,
+                'area_penyelenggara' => $branchForCabang?->areaRelation?->nama_area ?? $branchForCabang?->area,
                 'pic_id' => $users->random()->id,
                 'status' => $status,
-                'start_date' => $faker->dateTimeBetween('-6 months', '+1 month'),
-                'end_date' => $faker->dateTimeBetween('+1 month', '+2 months'),
+                'start_date' => $faker->dateTimeBetween('-6 months', '+1 month')->format('Y-m-d'),
+                'end_date' => $faker->dateTimeBetween('+1 month', '+2 months')->format('Y-m-d'),
                 'target_participants' => $faker->numberBetween(20, 50),
+                'description' => $faker->sentence(12),
                 'evaluation' => $status === 'selesai' ? $faker->paragraph : null,
                 'created_by' => $admin->id,
             ]);

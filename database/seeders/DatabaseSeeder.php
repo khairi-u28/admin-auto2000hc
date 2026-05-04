@@ -23,13 +23,7 @@ class DatabaseSeeder extends Seeder
         );
 
         $this->call([
-            BranchSeeder::class,
-            JobRoleSeeder::class,
-            CompetencySeeder::class,
-            LearningPathSeeder::class,
-            EmployeeSeeder::class,
-            TrainingRecordSeeder::class,
-            DevelopmentProgramSeeder::class,
+            FullDemoSeeder::class,
         ]);
     }
 }

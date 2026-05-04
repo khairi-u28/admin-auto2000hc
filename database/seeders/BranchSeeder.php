@@ -129,10 +129,18 @@ class BranchSeeder extends Seeder
         ];
 
         foreach ($branches as $branch) {
-            $region = Region::where('nama_region', $branch['region'])->first();
-            $area = Area::where('nama_area', $branch['area'])
-                ->when($region, fn ($query) => $query->where('region_id', $region->id))
-                ->first();
+            $region = Region::firstOrCreate(
+                ['nama_region' => $branch['region']],
+                ['nama_rbh' => null]
+            );
+
+            $area = Area::firstOrCreate(
+                [
+                    'region_id' => $region->id,
+                    'nama_area' => $branch['area'],
+                ],
+                ['nama_abh' => null]
+            );
 
             Branch::updateOrCreate([
                 'code' => $branch['code'],
@@ -141,8 +149,8 @@ class BranchSeeder extends Seeder
                 'area' => $branch['area'],
                 'region' => $branch['region'],
                 'type' => $branch['type'],
-                'region_id' => $region?->id,
-                'area_id' => $area?->id,
+                'region_id' => $region->id,
+                'area_id' => $area->id,
                 'kode_cabang' => $branch['code'],
                 'nama' => $branch['name'],
             ]);
