@@ -1,27 +1,32 @@
 <?php
 
-namespace App\Filament\Resources\RegionResource\Pages;
+namespace App\Filament\Pages\MasterData;
 
-use App\Filament\Resources\RegionResource;
 use App\Models\Batch;
 use App\Models\BatchParticipant;
 use App\Models\Branch;
 use App\Models\Competency;
 use App\Models\Employee;
-use Filament\Actions\EditAction;
-use Filament\Resources\Pages\ViewRecord;
+use Filament\Pages\Page;
+use Illuminate\Support\Facades\DB;
 
-class ViewRegion extends ViewRecord
+class RegionDetailPage extends Page
 {
-    protected static string $resource = RegionResource::class;
-    protected string $view = 'filament.resources.regions.view';
+    protected static bool $shouldRegisterNavigation = false;
+    protected string $view = 'filament.pages.master-data.region-detail';
+
+    public string $region = '';
+
+    public function mount(): void
+    {
+        $this->region = request('region', '');
+        if (!$this->region) abort(404);
+    }
 
     public function getViewData(): array
     {
-        $regionName = $this->record->nama_region;
-
         try {
-            $branchIds = Branch::where('region', $regionName)->pluck('id');
+            $branchIds = Branch::where('region', $this->region)->pluck('id');
             $batchIds  = Batch::whereIn('branch_id', $branchIds)->pluck('id');
             $empIds    = Employee::whereIn('branch_id', $branchIds)
                 ->where('status','active')->pluck('id');
@@ -36,23 +41,18 @@ class ViewRegion extends ViewRecord
                 ->whereIn('status',['lulus','tidak_lulus'])->count();
             $kelulusanPct  = $totalEval>0
                 ? round($totalLulus/$totalEval*100,1):0;
-            
-            $rbhName       = $this->record->nama_rbh;
-            if (!$rbhName) {
-                $rbhName = Employee::whereHas('jobRole',
-                    fn($q)=>$q->where('code','RBH01'))
-                    ->where('region',$regionName)->value('full_name') ?? '-';
-            }
+            $rbhName       = Employee::whereHas('jobRole',
+                fn($q)=>$q->where('code','RBH01'))
+                ->where('region',$this->region)->value('full_name') ?? '-';
 
             // Area breakdown
-            $areaBreakdown = Branch::where('region',$regionName)
+            $areaBreakdown = Branch::where('region',$this->region)
                 ->select('area')
                 ->selectRaw('COUNT(DISTINCT branches.id) as total_cabang')
                 ->selectRaw('COUNT(DISTINCT employees.id) as total_karyawan')
                 ->leftJoin('employees','employees.branch_id','=','branches.id')
-                ->whereNotNull('area')
                 ->groupBy('area')->orderBy('area')->get()
-                ->map(function($row) {
+                ->map(function($row) use ($batchIds) {
                     $areaBranchIds = Branch::where('area',$row->area)->pluck('id');
                     $areaBatchIds  = Batch::whereIn('branch_id',$areaBranchIds)->pluck('id');
                     $lulus = BatchParticipant::whereIn('batch_id',$areaBatchIds)
@@ -71,7 +71,7 @@ class ViewRegion extends ViewRecord
                     ];
                 });
 
-            // Top gaps
+            // Top gaps in this region
             $topGaps = Competency::select('competencies.id','competencies.name')
                 ->selectRaw('COUNT(DISTINCT CASE WHEN batch_participants.status="lulus"
                     THEN batch_participants.employee_id END) as lulus_count')
@@ -102,20 +102,13 @@ class ViewRegion extends ViewRecord
                 ->orderByDesc('start_date')->limit(5)->get();
 
         } catch (\Exception $e) {
-            return ['region'=>$regionName,'totalKaryawan'=>0,
+            return ['region'=>$this->region,'totalKaryawan'=>0,
                 'activeBatch'=>0,'kelulusanPct'=>0,'rbhName'=>'-',
                 'areaBreakdown'=>collect(),'topGaps'=>collect(),
                 'recentBatches'=>collect()];
         }
 
         return compact('totalKaryawan','activeBatch','totalLulus',
-            'kelulusanPct','rbhName','areaBreakdown','topGaps','recentBatches') + ['region' => $regionName];
-    }
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            EditAction::make(),
-        ];
+            'kelulusanPct','rbhName','areaBreakdown','topGaps','recentBatches');
     }
 }

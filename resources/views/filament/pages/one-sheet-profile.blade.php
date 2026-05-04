@@ -2,6 +2,27 @@
     @php
         $golonganOptions = ['IIIA', 'IIIB', 'IIIC', 'IVA', 'IVB', 'IVC', 'VA', 'VB', 'VC'];
         $randomGolongan = $golonganOptions[array_rand($golonganOptions)];
+        $pendidikanOptions = ['S1 Manajemen', 'S1 Teknik Industri', 'S1 Teknik Mesin', 'S1 Teknik Otomotif', 'S1 Sistem Informasi', 'S1 Akuntansi', 'S1 Psikologi', 'S1 Ilmu Komunikasi', 'S1 Administrasi Bisnis', 'S1 Statistika', 'S1 Matematika', 'S1 Teknik Informatika', 'S1 Ekonomi', 'S1 Hubungan Internasional', 'S1 Hukum', 'S1 Teknik Elektro', 'S1 Teknik Sipil', 'S1 Supply Chain Management', 'S1 Logistik', 'S2 Manajemen'];
+        $instansiOptions = ['Universitas Indonesia', 'Institut Teknologi Bandung', 'Universitas Gadjah Mada', 'Universitas Airlangga', 'Institut Pertanian Bogor', 'Universitas Brawijaya', 'Universitas Diponegoro', 'Universitas Padjadjaran', 'Universitas Sebelas Maret', 'Universitas Hasanuddin', 'Universitas Negeri Jakarta', 'Universitas Trisakti', 'Binus University', 'Universitas Katolik Atma Jaya', 'Universitas Mercu Buana', 'Universitas Telkom', 'Universitas Andalas', 'Universitas Sumatera Utara', 'Universitas Lampung', 'Universitas Udayana'];
+        $randomPendidikan = $pendidikanOptions[array_rand($pendidikanOptions)];
+        $randomInstansi = $instansiOptions[array_rand($instansiOptions)];
+        $kpiMid = rand(40, 85);
+        $kpiFull = rand($kpiMid + 1, 100);
+        $kpiYear = now()->subYear()->year;
+        $allRoles = ['Sales Consultant', 'Service Advisor', 'Foreman', 'Branch Coordinator', 'Account Supervisor', 'Sales Manager', 'Area Business Head', 'Region Business Head', 'HC Analyst', 'HC Specialist', 'Product Development', 'General Services'];
+        shuffle($allRoles);
+        $roleHistoryCount = rand(3, 5);
+        $roleHistory = [];
+        $cursorDate = $this->employee->entry_date ? \Carbon\Carbon::parse($this->employee->entry_date) : now()->subYears(8);
+        for ($i = 0; $i < $roleHistoryCount; $i++) {
+            $isCurrent = $i === $roleHistoryCount - 1;
+            $start = $cursorDate->copy();
+            $end = $isCurrent ? null : $start->copy()->addMonths(rand(10, 28));
+            $roleHistory[] = ['jabatan' => $isCurrent ? ($this->employee->jobRole?->name ?? $this->employee->position_name ?? 'Jabatan Saat Ini') : ($allRoles[$i] ?? 'Staff'), 'start' => $start, 'end' => $end, 'current' => $isCurrent];
+            if ($end) {
+                $cursorDate = $end->copy()->addDays(1);
+            }
+        }
     @endphp
     <style>
         /* Modern Theme Variables for Safe Mode */
@@ -93,6 +114,8 @@
                                 'Golongan' => $this->employee->grade ?: $randomGolongan,
                                 'Masuk' => $this->employee->entry_date?->format('d/m/Y'),
                                 'Lahir' => $this->employee->date_of_birth?->format('d/m/Y'),
+                                'Pendidikan Terakhir' => $randomPendidikan,
+                                'Instansi Pendidikan' => $randomInstansi,
                             ] as $label => $val)
                                 <div style="display: flex; justify-content: space-between; font-size: 0.875rem; padding-bottom: 0.625rem; border-bottom: 1px solid var(--border-item);">
                                     <span style="color: var(--text-dim); font-weight: 700; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.025em;">{{ $label }}</span>
@@ -124,7 +147,7 @@
                                                 {{ $record->completion_date?->format('d/m/Y') ?? '-' }}
                                             </td>
                                             <td style="padding: 1.125rem 1rem; vertical-align: top;">
-                                                <div style="font-weight: 750; color: var(--text-main); margin-bottom: 0.25rem;">{{ $record->competency?->name ?? 'Training' }}</div>
+                                                <div style="font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">{{ $record->competency?->name ?? 'Training' }}</div>
                                                 <div style="font-size: 0.75rem; color: var(--text-dim);">Sumber: {{ $record->source ?? 'Internal' }}</div>
                                             </td>
                                             <td style="padding: 1.125rem 1rem; text-align: center; vertical-align: top;">
@@ -139,12 +162,35 @@
                         </div>
                     @endif
                 </x-filament::section>
+
+                <x-filament::section heading="Riwayat Jabatan" icon="heroicon-o-briefcase">
+                    <div style="overflow-x: auto; border: 1px solid var(--border-item); border-radius: 1rem;">
+                        <table style="width: 100%; text-align: left; border-collapse: collapse; font-size: 0.875rem;">
+                            <thead style="background: var(--bg-item); border-bottom: 1px solid var(--border-item);">
+                                <tr>
+                                    <th style="padding: 1rem; font-weight: 800; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase;">Jabatan</th>
+                                    <th style="padding: 1rem; font-weight: 800; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase;">Start</th>
+                                    <th style="padding: 1rem; font-weight: 800; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase;">End</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($roleHistory as $history)
+                                    <tr style="border-bottom: 1px solid var(--border-item); {{ $history['current'] ? 'background: rgba(56, 189, 248, 0.08);' : '' }}">
+                                        <td style="padding: 1rem; font-weight: {{ $history['current'] ? '700' : '600' }};">{{ $history['jabatan'] }}</td>
+                                        <td style="padding: 1rem;">{{ $history['start']->format('d/m/Y') }}</td>
+                                        <td style="padding: 1rem;">{{ $history['end'] ? $history['end']->format('d/m/Y') : 'NOW' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </x-filament::section>
             </div>
 
             {{-- Right Sidebar --}}
             <div style="display: flex; flex-direction: column; gap: 2rem;">
                 {{-- HAV Score Panel --}}
-                <div style="background: linear-gradient(135deg, #1A3A5C 0%, #164e63 100%); border-radius: 2rem; padding: 2.5rem; color: white; box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.2); position: relative; overflow: hidden;">
+                <div style="background: linear-gradient(135deg, #1A3A5C 0%, #164e63 100%); border-radius: 2rem; padding: 2.5rem; color: white; box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.2); position: relative; overflow: hidden; margin-bottom:16px !important">
                     <x-heroicon-o-fire style="position: absolute; right: -1rem; bottom: -1rem; width: 8rem; height: 8rem; opacity: 0.1; transform: rotate(-12deg);" />
                     
                     <div style="display: flex; justify-content: space-between; align-items: center; opacity: 0.6; margin-bottom: 1.5rem;">
@@ -173,11 +219,15 @@
                             @endphp
                             <div style="font-weight: 800; font-size: 1.125rem;">{{ $pkKey }} index ({{ $pkValue }})</div>
                         </div>
+                        <div style="background: rgba(255,255,255,0.08); padding: 1rem; border-radius: 1.25rem; border: 1px solid rgba(255,255,255,0.1);">
+                            <div style="font-size: 0.6rem; text-transform: uppercase; opacity: 0.5; font-weight: 800; margin-bottom: 0.25rem;">KPI Mid & Full Year</div>
+                            <div style="font-weight: 800; font-size: 1.125rem;">{{ $kpiMid }}% : {{ $kpiFull }}% ({{ $kpiYear }})</div>
+                        </div>
                 </div>
 
                 {{-- Learning Path Progress --}}
-                <x-filament::section heading="Learning Path" icon="heroicon-o-presentation-chart-line">
-                    <div style="display: flex; flex-direction: column; gap: 1.5rem; padding: 0.5rem 0;">
+                <x-filament::section heading="Learning Path" icon="heroicon-o-presentation-chart-line" style="margin: top 16px !important;">
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem; padding: 0.5rem 0">
                         @forelse($this->employee->batchParticipants as $training)
                             @php
                                 $pct = match($training->status) {
@@ -207,4 +257,3 @@
         </div>
     </div>
 </x-filament-panels::page>
-

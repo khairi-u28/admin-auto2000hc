@@ -32,7 +32,7 @@ class BranchesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->withCount('employees'))
+            ->modifyQueryUsing(fn($query) => $query->withCount('employees'))
             ->columns([
                 TextColumn::make('kode_cabang')
                     ->label('Kode Cabang')
@@ -48,14 +48,14 @@ class BranchesRelationManager extends RelationManager
                 TextColumn::make('employees_count')
                     ->label('Jml. Karyawan')
                     ->sortable(),
-                TextColumn::make('area_penyelenggara')
-                    ->label('Area Penyelenggara')
-                    ->placeholder('-')
-                    ->toggleable(),
+                // TextColumn::make('area_penyelenggara')
+                //     ->label('Area Penyelenggara')
+                //     ->placeholder('-')
+                //     ->toggleable(),
             ])
             ->recordActions([
                 \Filament\Actions\EditAction::make()
-                    ->url(fn ($record): string => \App\Filament\Resources\Branches\BranchResource::getUrl('edit', ['record' => $record])),
+                    ->url(fn($record): string => \App\Filament\Resources\Branches\BranchResource::getUrl('edit', ['record' => $record])),
             ]);
     }
 }

@@ -2,87 +2,73 @@
 
 namespace App\Filament\Resources\JobRoles\RelationManagers;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\CreateAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
+use App\Filament\Pages\OneSheetProfilePage;
+use App\Models\Employee;
+use Filament\Actions\Action;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Components\Section;
+use Illuminate\Database\Eloquent\Builder;
 
 class CompetencyRequirementsRelationManager extends RelationManager
 {
-    protected static string $relationship = 'competencyRequirements';
+    protected static ?string $title = 'Daftar Karyawan';
 
-    protected static ?string $title = 'Persyaratan Kompetensi';
+    protected static string $relationship = 'competencyRequirements';
 
     public function form(Schema $schema): Schema
     {
-        return $schema->components([
-            Section::make()->columns(2)->components([
-                Select::make('competency_track_id')
-                    ->label('Kompetensi')
-                    ->relationship('competencyTrack', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->required(),
-                Select::make('minimum_level')
-                    ->label('Level Minimum')
-                    ->options([
-                        1 => 'Level 1',
-                        2 => 'Level 2',
-                        3 => 'Level 3',
-                    ])
-                    ->required(),
-                Toggle::make('is_mandatory')
-                    ->label('Wajib')
-                    ->default(true),
-            ]),
-        ]);
+        return $schema->components([]);
+    }
+
+    protected function getTableQuery(): Builder
+    {
+        $jobRoleId = $this->getOwnerRecord()?->id;
+
+        return Employee::query()
+            ->with(['branch.areaRelation.region', 'branch.regionRelation'])
+            ->where('job_role_id', $jobRoleId);
     }
 
     public function table(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('competencyTrack.name')
-                    ->label('Kompetensi')
+                TextColumn::make('nrp')
+                    ->label('NRP')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('competencyTrack.department')
-                    ->label('Departemen')
+                TextColumn::make('nama_lengkap')
+                    ->label('Nama')
+                    ->state(fn (Employee $record): string => $record->nama_lengkap ?? $record->full_name ?? '-')
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('minimum_level')
-                    ->label('Level Min.')
-                    ->badge()
-                    ->color(fn (int $state): string => match ($state) {
-                        1 => 'warning',
-                        2 => 'primary',
-                        3 => 'success',
-                        default => 'secondary',
-                    })
-                    ->formatStateUsing(fn (int $state): string => "Level {$state}")
+                TextColumn::make('branch.kode_cabang')
+                    ->label('Kode Cabang')
+                    ->state(fn (Employee $record): string => $record->branch?->kode_cabang ?? $record->branch?->code ?? '-')
                     ->sortable(),
-                IconColumn::make('is_mandatory')
-                    ->label('Wajib')
-                    ->boolean(),
+                TextColumn::make('branch.nama')
+                    ->label('Nama Cabang')
+                    ->state(fn (Employee $record): string => $record->branch?->nama ?? $record->branch?->name ?? '-')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('area')
+                    ->label('Area')
+                    ->state(fn (Employee $record): string => $record->branch?->areaRelation?->nama_area ?? $record->area ?? '-')
+                    ->sortable(),
+                TextColumn::make('region')
+                    ->label('Region')
+                    ->state(fn (Employee $record): string => $record->branch?->regionRelation?->nama_region ?? $record->region ?? '-')
+                    ->sortable(),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                Action::make('onesheet')
+                    ->label('One Sheet')
+                    ->icon('heroicon-o-identification')
+                    ->url(fn (Employee $record): string => OneSheetProfilePage::getUrl(['employee' => $record->id])),
             ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-                CreateAction::make(),
-            ]);
+            ->defaultSort('nama_lengkap');
     }
 }
+

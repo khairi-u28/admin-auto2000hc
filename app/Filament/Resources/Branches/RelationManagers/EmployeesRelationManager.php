@@ -37,10 +37,17 @@ class EmployeesRelationManager extends RelationManager
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge(),
+                TextColumn::make('one_sheet_link')
+                    ->label('')
+                    ->state('Profile')
+                    ->icon('heroicon-o-document-text')
+                    ->color('primary')
+                    ->url(fn($record): string => \App\Filament\Pages\OneSheetProfilePage::getUrl(['employee' => $record->id]))
+                    ->extraAttributes(['style' => 'font-weight: 600;']),
             ])
             ->recordActions([
                 \Filament\Actions\EditAction::make()
-                    ->url(fn ($record): string => \App\Filament\Resources\Employees\EmployeeResource::getUrl('edit', ['record' => $record])),
+                    ->url(fn($record): string => \App\Filament\Resources\Employees\EmployeeResource::getUrl('edit', ['record' => $record])),
             ]);
     }
 }

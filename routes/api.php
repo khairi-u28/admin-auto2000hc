@@ -39,7 +39,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('batches', \App\Http\Controllers\Api\V1\BatchController::class)->only(['index', 'show']);
 
         // Sesi (Legacy)
-        Route::apiResource('sesis', SesiController::class);
+        // Route::apiResource('sesis', SesiController::class);
 
         // Progress (enrollments)
         Route::get('progress',                     [ProgressController::class, 'index']);

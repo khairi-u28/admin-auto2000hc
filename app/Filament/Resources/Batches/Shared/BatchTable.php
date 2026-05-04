@@ -36,21 +36,21 @@ class BatchTable
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'draft'       => 'gray',
-                        'open'        => 'info',
+                    ->color(fn(string $state): string => match ($state) {
+                        'draft' => 'gray',
+                        'open' => 'info',
                         'berlangsung' => 'warning',
-                        'selesai'     => 'success',
-                        'dibatalkan'  => 'danger',
-                        default       => 'gray',
+                        'selesai' => 'success',
+                        'dibatalkan' => 'danger',
+                        default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'draft'       => 'Draft',
-                        'open'        => 'Open',
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                        'draft' => 'Draft',
+                        'open' => 'Open',
                         'berlangsung' => 'Berlangsung',
-                        'selesai'     => 'Selesai',
-                        'dibatalkan'  => 'Dibatalkan',
-                        default       => $state,
+                        'selesai' => 'Selesai',
+                        'dibatalkan' => 'Dibatalkan',
+                        default => $state,
                     }),
 
                 TextColumn::make('start_date')
@@ -65,7 +65,8 @@ class BatchTable
 
                 TextColumn::make('participants_summary')
                     ->label('Peserta (Aktual/Target)')
-                    ->state(fn ($record) => 
+                    ->state(
+                        fn($record) =>
                         ($record->actual_participants_count ?? 0) . ' / ' . ($record->target_participants ?? 0)
                     ),
 
@@ -78,11 +79,11 @@ class BatchTable
                 SelectFilter::make('status')
                     ->label('Status')
                     ->options([
-                        'draft'       => 'Draft',
-                        'open'        => 'Open',
+                        'draft' => 'Draft',
+                        'open' => 'Open',
                         'berlangsung' => 'Berlangsung',
-                        'selesai'     => 'Selesai',
-                        'dibatalkan'  => 'Dibatalkan',
+                        'selesai' => 'Selesai',
+                        'dibatalkan' => 'Dibatalkan',
                     ]),
 
                 SelectFilter::make('competency_id')

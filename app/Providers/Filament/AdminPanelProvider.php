@@ -7,7 +7,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
+use App\Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -40,7 +40,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('Ruang Kompetensi')
             ->navigationGroups([
                 NavigationGroup::make('Master Data')->icon('heroicon-o-circle-stack'),
-                NavigationGroup::make('Learning Management')->icon('heroicon-o-book-open'),
+                NavigationGroup::make('Knowledge Management')->icon('heroicon-o-book-open'),
                 NavigationGroup::make('Training Management')->icon('heroicon-o-academic-cap'),
                 NavigationGroup::make('Report')->icon('heroicon-o-presentation-chart-bar'),
                 NavigationGroup::make('Sistem')->icon('heroicon-o-cog-6-tooth'),
@@ -50,15 +50,15 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
-            ->widgets([
-                \App\Filament\Widgets\StatsOverviewWidget::class,
-                \App\Filament\Widgets\DepartmentCompletionChartWidget::class,
-                \App\Filament\Widgets\CompetencyDistributionWidget::class,
-                \App\Filament\Widgets\RegionHeatmapWidget::class,
-                // \App\Filament\Widgets\CompetencyGapWidget::class,
-                \App\Filament\Widgets\BranchLeaderboardWidget::class,
-            ])
+            // ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            // ->widgets([
+            //     \App\Filament\Widgets\StatsOverviewWidget::class,
+            //     \App\Filament\Widgets\DepartmentCompletionChartWidget::class,
+            //     \App\Filament\Widgets\CompetencyDistributionWidget::class,
+            //     \App\Filament\Widgets\RegionHeatmapWidget::class,
+            //     // \App\Filament\Widgets\CompetencyGapWidget::class,
+            //     \App\Filament\Widgets\BranchLeaderboardWidget::class,
+            // ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

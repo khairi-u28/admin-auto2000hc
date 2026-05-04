@@ -47,13 +47,13 @@ class BatchSchemas
                         ->relationship('branch', 'name')
                         ->searchable()
                         ->preload()
-                        ->required(fn () => $type === 'cabang')
-                        ->visible(fn () => $type === 'cabang'),
+                        ->required(fn() => $type === 'cabang')
+                        ->visible(fn() => $type === 'cabang'),
 
                     TextInput::make('area_penyelenggara')
                         ->label('Area Penyelenggara')
-                        ->required(fn () => $type === 'cabang')
-                        ->visible(fn () => $type === 'cabang'),
+                        ->required(fn() => $type === 'cabang')
+                        ->visible(fn() => $type === 'cabang'),
                     Select::make('pic_id')
                         ->label('PIC')
                         ->relationship('pic', 'name')
@@ -73,15 +73,15 @@ class BatchSchemas
                         ])
                         ->default('draft')
                         ->required(),
-                    Select::make('selected_module_id')
-                        ->label('Filter Silabus Modul')
-                        ->options(fn ($get) => self::getSilabusOptions($get('id')))
-                        ->reactive()
-                        ->dehydrated(false)
-                        ->searchable()
-                        ->placeholder('Pilih modul untuk filter silabus')
-                        ->columnSpanFull()
-                        ->visible(fn ($get) => filled($get('id'))),
+                    // Select::make('selected_module_id')
+                    //     ->label('Filter Silabus Modul')
+                    //     ->options(fn ($get) => self::getSilabusOptions($get('id')))
+                    //     ->reactive()
+                    //     ->dehydrated(false)
+                    //     ->searchable()
+                    //     ->placeholder('Pilih modul untuk filter silabus')
+                    //     ->columnSpanFull()
+                    //     ->visible(fn ($get) => filled($get('id'))),
                     DatePicker::make('start_date')
                         ->label('Tanggal Mulai')
                         ->required(),
@@ -102,14 +102,14 @@ class BatchSchemas
 
     protected static function getSilabusOptions(?string $batchId): array
     {
-        if (! $batchId) {
+        if (!$batchId) {
             return [];
         }
 
         return Batch::with('materi.module')
             ->find($batchId)
             ?->materi
-            ->mapWithKeys(fn ($materi) => [
+            ->mapWithKeys(fn($materi) => [
                 $materi->module_id => $materi->module?->title ?? 'Tanpa Modul',
             ])
             ->unique()
@@ -119,16 +119,16 @@ class BatchSchemas
     public static function table(Table $table, string $type): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->with(['pic', 'competency', 'participants']))
+            ->modifyQueryUsing(fn($query) => $query->with(['pic', 'competency', 'participants']))
             ->columns([
                 TextColumn::make('batch_code')
                     ->label('Kode Batch')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('name')
-                    ->label('Nama Batch')
-                    ->searchable()
-                    ->sortable(),
+                // TextColumn::make('name')
+                //     ->label('Nama Batch')
+                //     ->searchable()
+                //     ->sortable(),
                 TextColumn::make('competency.name')
                     ->label('Kompetensi')
                     ->searchable()
@@ -154,7 +154,8 @@ class BatchSchemas
                     ->sortable(),
                 TextColumn::make('participants_summary')
                     ->label('Peserta (Aktual/Target)')
-                    ->state(fn (Batch $record): string => 
+                    ->state(
+                        fn(Batch $record): string =>
                         ($record->actual_participants_count ?? 0) . ' / ' . ($record->target_participants ?? 0)
                     ),
                 TextColumn::make('pic.name')
@@ -188,8 +189,8 @@ class BatchSchemas
                     ->icon('heroicon-o-check-circle')
                     ->color('warning')
                     ->requiresConfirmation()
-                    ->action(fn (Batch $record) => $record->update(['status' => 'pendaftaran']))
-                    ->visible(fn (Batch $record) => $record->status === 'draft'),
+                    ->action(fn(Batch $record) => $record->update(['status' => 'pendaftaran']))
+                    ->visible(fn(Batch $record) => $record->status === 'draft'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

@@ -8,6 +8,7 @@ use App\Filament\Resources\Batches\Cabang\Pages\ListBatchCabang;
 use App\Filament\Resources\Batches\RelationManagers\BatchFeedbackRelationManager;
 use App\Filament\Resources\Batches\RelationManagers\BatchMateriRelationManager;
 use App\Filament\Resources\Batches\RelationManagers\BatchParticipantsRelationManager;
+use App\Filament\Resources\Batches\RelationManagers\BatchTrainersRelationManager;
 use App\Filament\Resources\Batches\Shared\BatchSchemas;
 use App\Models\Batch;
 use BackedEnum;
@@ -27,9 +28,9 @@ class BatchCabangResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    protected static ?string $modelLabel = 'Training Cabang';
+    protected static ?string $modelLabel = 'Mandatory & Thematic';
 
-    protected static ?string $pluralModelLabel = 'Training Cabang';
+    protected static ?string $pluralModelLabel = 'Mandatory & Thematic';
 
     protected static ?string $slug = 'training-cabang';
 
@@ -57,6 +58,7 @@ class BatchCabangResource extends Resource
     {
         return [
             BatchParticipantsRelationManager::class,
+            BatchTrainersRelationManager::class,
             BatchMateriRelationManager::class,
             BatchFeedbackRelationManager::class,
             BatchEvaluationRelationManager::class,

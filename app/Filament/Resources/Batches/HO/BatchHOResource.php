@@ -9,6 +9,7 @@ use App\Filament\Resources\Batches\RelationManagers\BatchEvaluationRelationManag
 use App\Filament\Resources\Batches\RelationManagers\BatchFeedbackRelationManager;
 use App\Filament\Resources\Batches\RelationManagers\BatchMateriRelationManager;
 use App\Filament\Resources\Batches\RelationManagers\BatchParticipantsRelationManager;
+use App\Filament\Resources\Batches\RelationManagers\BatchTrainersRelationManager;
 use App\Filament\Resources\Batches\Shared\BatchSchemas;
 use App\Models\Batch;
 use BackedEnum;
@@ -26,9 +27,9 @@ class BatchHOResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    protected static ?string $modelLabel = 'Training HO';
+    protected static ?string $modelLabel = 'Development Program';
 
-    protected static ?string $pluralModelLabel = 'Training HO';
+    protected static ?string $pluralModelLabel = 'Development Program';
 
     protected static ?string $slug = 'training-ho';
 
@@ -56,6 +57,7 @@ class BatchHOResource extends Resource
     {
         return [
             BatchParticipantsRelationManager::class,
+            BatchTrainersRelationManager::class,
             BatchMateriRelationManager::class,
             BatchFeedbackRelationManager::class,
             BatchEvaluationRelationManager::class,

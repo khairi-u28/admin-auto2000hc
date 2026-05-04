@@ -129,6 +129,21 @@ class BranchSeeder extends Seeder
         ];
 
         foreach ($branches as $branch) {
+            $normalizedType = match (true) {
+                $branch['code'] === 'T000' => 'HO',
+                $branch['code'] === 'T015' => 'SP',
+                $branch['code'] === 'T168' => 'Fleet',
+                $branch['code'] === 'T905' => 'GSO',
+                $branch['code'] === 'T904' => 'CAO',
+                $branch['code'] === 'T151' => 'PDC',
+                $branch['type'] === 'BP' => 'BP',
+                default => 'VSP',
+            };
+
+            if ($branch['code'] === 'T015') {
+                $branch['name'] = 'GR Garage PIK';
+            }
+
             $region = Region::firstOrCreate(
                 ['nama_region' => $branch['region']],
                 ['nama_rbh' => null]
@@ -148,7 +163,7 @@ class BranchSeeder extends Seeder
                 'name' => $branch['name'],
                 'area' => $branch['area'],
                 'region' => $branch['region'],
-                'type' => $branch['type'],
+                'type' => $normalizedType,
                 'region_id' => $region->id,
                 'area_id' => $area->id,
                 'kode_cabang' => $branch['code'],

@@ -1,206 +1,230 @@
 <?php
-
 namespace App\Filament\Pages;
 
-use App\Models\Branch;
-use App\Models\Employee;
+use App\Models\Batch;
 use App\Models\BatchParticipant;
-use App\Models\TrainingRecord;
+use App\Models\Branch;
+use App\Models\Competency;
+use App\Models\Employee;
+use App\Models\JobRole;
 use Filament\Pages\Page;
-use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Concerns\InteractsWithTable;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Actions\Action;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
-use Filament\Tables\Contracts\HasTable;
-
-class NasionalPage extends Page implements HasTable
+class NasionalPage extends Page
 {
-    use InteractsWithTable;
-    
-    public static function getNavigationGroup(): ?string
+    protected string $view = 'filament.pages.nasional';
+    protected static string|null $navigationLabel = 'Nasional';
+    protected static string | \UnitEnum | null $navigationGroup = 'Report';
+    protected static ?int $navigationSort = 1;
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-globe-alt';
+
+    public int $filterYear;
+    public string $filterPeriode = 'full';
+    public string $filterTipe    = 'all';
+    public string $filterRegion  = 'all';
+
+    public function mount(): void
     {
-        return 'Laporan';
+        $this->filterYear = now()->year;
     }
 
-    public static function getNavigationIcon(): Heroicon|string|null
+    public function updatedFilterYear(): void { $this->dispatch('$refresh'); }
+    public function updatedFilterPeriode(): void { $this->dispatch('$refresh'); }
+    public function updatedFilterTipe(): void { $this->dispatch('$refresh'); }
+    public function updatedFilterRegion(): void { $this->dispatch('$refresh'); }
+
+    protected function buildBatchQuery()
     {
-        return 'heroicon-o-globe-asia-australia';
+        $q = Batch::whereYear('end_date', $this->filterYear);
+        if ($this->filterPeriode === 's1')
+            $q->whereMonth('end_date', '<=', 6);
+        if ($this->filterPeriode === 's2')
+            $q->whereMonth('end_date', '>=', 7);
+        if ($this->filterTipe !== 'all')
+            $q->where('type', $this->filterTipe);
+        if ($this->filterRegion !== 'all') {
+            $branchIds = Branch::where('region', $this->filterRegion)->pluck('id');
+            $q->whereIn('branch_id', $branchIds);
+        }
+        return $q;
     }
 
-    public static function getNavigationSort(): ?int
+    public function getViewData(): array
     {
-        return 1;
+        try {
+            $batchQ      = $this->buildBatchQuery();
+            $batchIds    = (clone $batchQ)->pluck('id');
+            $totalSelesai = (clone $batchQ)->where('status','selesai')->count();
+            $totalPeserta = BatchParticipant::whereIn('batch_id', $batchIds)
+                ->distinct('employee_id')->count('employee_id');
+            $totalLulus   = BatchParticipant::whereIn('batch_id', $batchIds)
+                ->where('status','lulus')->count();
+            $totalTidakLulus = BatchParticipant::whereIn('batch_id', $batchIds)
+                ->where('status','tidak_lulus')->count();
+            $totalEval    = $totalLulus + $totalTidakLulus;
+            $kelulusanPct = $totalEval > 0
+                ? round($totalLulus / $totalEval * 100, 1) : 0;
+
+            // Avg feedback ratings
+            $avgTraining  = DB::table('batch_feedback')
+                ->whereIn('batch_id', $batchIds)
+                ->where('is_submitted', true)
+                ->selectRaw('ROUND(AVG((training_relevance + training_material_quality + 
+                    training_schedule + training_facility) / 4.0), 1) as avg')
+                ->value('avg') ?? 0;
+            $avgTrainer   = DB::table('batch_feedback')
+                ->whereIn('batch_id', $batchIds)
+                ->where('is_submitted', true)
+                ->selectRaw('ROUND(AVG((trainer_mastery + trainer_delivery + 
+                    trainer_responsiveness + trainer_attitude) / 4.0), 1) as avg')
+                ->value('avg') ?? 0;
+            $totalOverdue = Batch::where('status','berlangsung')
+                ->where('end_date','<', now()->toDateString())->count();
+
+            // Region performance
+            $regionData = Branch::select('branches.region')
+                ->selectRaw('COUNT(DISTINCT batches.id) as total_batch')
+                ->selectRaw('COUNT(DISTINCT batch_participants.employee_id) as total_peserta')
+                ->selectRaw('COUNT(DISTINCT CASE WHEN batch_participants.status = "lulus" 
+                    THEN batch_participants.employee_id END) as total_lulus')
+                ->selectRaw('ROUND(AVG((batch_feedback.training_relevance + 
+                    batch_feedback.training_material_quality + 
+                    batch_feedback.training_schedule + 
+                    batch_feedback.training_facility) / 4.0), 1) as avg_rating')
+                ->leftJoin('batches', 'batches.branch_id', '=', 'branches.id')
+                ->leftJoin('batch_participants',
+                    'batch_participants.batch_id', '=', 'batches.id')
+                ->leftJoin('batch_feedback', function($j) {
+                    $j->on('batch_feedback.batch_id','=','batches.id')
+                      ->where('batch_feedback.is_submitted', true);
+                })
+                ->whereIn('batches.id', $batchIds)
+                ->groupBy('branches.region')
+                ->orderBy('branches.region')
+                ->get();
+
+            // Monthly trend (12 months of selected year)
+            $monthlyTrend = collect(range(1, 12))->map(function($m) {
+                $selesai = Batch::where('status','selesai')
+                    ->whereYear('end_date', $this->filterYear)
+                    ->whereMonth('end_date', $m)->count();
+                $lulus = BatchParticipant::where('status','lulus')
+                    ->whereHas('batch', fn($q) =>
+                        $q->whereYear('end_date', $this->filterYear)
+                          ->whereMonth('end_date', $m))
+                    ->count();
+                return ['month'=>$m,'selesai'=>$selesai,'lulus'=>$lulus];
+            });
+
+            // Batch status distribution (filtered)
+            $batchStatusCounts = (clone $batchQ)
+                ->select('status', DB::raw('COUNT(*) as count'))
+                ->groupBy('status')->pluck('count','status')->toArray();
+
+            // Supply vs gap per competency
+            $competencyAnalysis = Competency::select('competencies.id','competencies.name')
+                ->selectRaw('COUNT(DISTINCT CASE WHEN batch_participants.status = "lulus" 
+                    THEN batch_participants.employee_id END) as supply')
+                ->selectRaw('COUNT(DISTINCT employees.id) as demand')
+                ->join('learning_path_competencies',
+                    'competencies.id','=','learning_path_competencies.competency_id')
+                ->join('learning_paths',
+                    'learning_path_competencies.learning_path_id','=','learning_paths.id')
+                ->join('employees',
+                    'employees.job_role_id','=','learning_paths.job_role_id')
+                ->leftJoin('batches', function($j) use ($batchIds) {
+                    $j->on('batches.competency_id','=','competencies.id')
+                      ->whereIn('batches.id', $batchIds);
+                })
+                ->leftJoin('batch_participants', function($j) {
+                    $j->on('batch_participants.batch_id','=','batches.id')
+                      ->where('batch_participants.status','lulus');
+                })
+                ->where('employees.status','active')
+                ->groupBy('competencies.id','competencies.name')
+                ->having('demand', '>', 0)
+                ->orderByRaw('(demand - supply) DESC')
+                ->limit(8)->get()->toArray();
+
+            // Job Role x Competency heatmap
+            $topRoles = JobRole::withCount(['employees as emp_count' =>
+                fn($q) => $q->where('status','active')])
+                ->having('emp_count','>',0)
+                ->orderByDesc('emp_count')->limit(6)->get();
+            $topComps = Competency::whereIn('id',
+                BatchParticipant::whereIn('batch_id', $batchIds)
+                    ->join('batches','batches.id','=','batch_participants.batch_id')
+                    ->distinct()->pluck('batches.competency_id'))
+                ->limit(6)->get();
+
+            $heatmapData = [];
+            foreach ($topRoles as $role) {
+                $empIds = Employee::where('job_role_id',$role->id)
+                    ->where('status','active')->pluck('id');
+                $row = ['role' => $role->name, 'cells' => []];
+                foreach ($topComps as $comp) {
+                    $lulus = BatchParticipant::whereIn('employee_id', $empIds)
+                        ->where('status','lulus')
+                        ->whereHas('batch',
+                            fn($q) => $q->where('competency_id', $comp->id))
+                        ->distinct('employee_id')->count('employee_id');
+                    $pct = $empIds->count() > 0
+                        ? round($lulus / $empIds->count() * 100) : 0;
+                    $row['cells'][] = ['comp'=>$comp->name,'pct'=>$pct];
+                }
+                $heatmapData[] = $row;
+            }
+
+            // Overdue batches detail
+            $overdueBatches = Batch::where('status','berlangsung')
+                ->where('end_date','<', now()->toDateString())
+                ->with('competency','branch')
+                ->orderBy('end_date')->limit(5)->get();
+
+            // Lowest fulfillment job roles
+            $lowFulfillRoles = [];
+            foreach (JobRole::withCount(['employees as ec' =>
+                fn($q) => $q->where('status','active')])
+                ->having('ec','>',0)->get() as $role) {
+                $empIds = Employee::where('job_role_id',$role->id)
+                    ->pluck('id');
+                $lulus = BatchParticipant::whereIn('employee_id',$empIds)
+                    ->where('status','lulus')
+                    ->distinct('employee_id')->count('employee_id');
+                $pct = $empIds->count() > 0
+                    ? round($lulus / $empIds->count() * 100) : 0;
+                $lowFulfillRoles[] = [
+                    'name'=>$role->name,'pct'=>$pct,'total'=>$empIds->count()
+                ];
+            }
+            usort($lowFulfillRoles, fn($a,$b) => $a['pct'] - $b['pct']);
+            $lowFulfillRoles = array_slice($lowFulfillRoles, 0, 6);
+
+            $regions = Branch::distinct()->whereNotNull('region')
+                ->pluck('region')->filter()->sort()->values();
+
+        } catch (\Exception $e) {
+            return $this->emptyNasionalData();
+        }
+
+        return compact(
+            'totalSelesai','totalPeserta','totalLulus','totalTidakLulus','totalEval',
+            'kelulusanPct','avgTraining','avgTrainer','totalOverdue',
+            'regionData','monthlyTrend','batchStatusCounts',
+            'competencyAnalysis','heatmapData','overdueBatches',
+            'lowFulfillRoles','regions'
+        );
     }
 
-    public function getView(): string
+    private function emptyNasionalData(): array
     {
-        return 'filament.pages.nasional';
-    }
-
-    public function getNationalStats(): array
-    {
-        $totalTraining = BatchParticipant::count();
-        $completedTraining = BatchParticipant::where('status', 'lulus')->count();
-
         return [
-            'total_karyawan_aktif' => Employee::where('status', 'active')->count(),
-            'total_cabang' => Branch::count(),
-            'total_training' => $totalTraining,
-            'completion_rate' => $totalTraining > 0 ? round(($completedTraining / $totalTraining) * 100, 1) : 0,
-            'total_training_records' => TrainingRecord::count(),
+            'totalSelesai'=>0,'totalPeserta'=>0,'totalLulus'=>0,
+            'totalTidakLulus'=>0,'totalEval'=>0,'kelulusanPct'=>0,'avgTraining'=>0,
+            'avgTrainer'=>0,'totalOverdue'=>0,'regionData'=>collect(),
+            'monthlyTrend'=>collect(),'batchStatusCounts'=>[],
+            'competencyAnalysis'=>[],'heatmapData'=>[],'overdueBatches'=>collect(),
+            'lowFulfillRoles'=>[],'regions'=>collect(),
         ];
     }
-
-    public function getTrainingStatusDistribution(): array
-    {
-        $statuses = ['menunggu_undangan', 'hadir', 'lulus', 'batal'];
-
-        return collect($statuses)
-            ->mapWithKeys(fn (string $status) => [$status => BatchParticipant::where('status', $status)->count()])
-            ->all();
-    }
-
-    public function getMonthlyCompletionTrend(): array
-    {
-        return collect(range(5, 0))
-            ->map(function (int $monthsAgo): array {
-                $date = now()->subMonths($monthsAgo);
-
-                return [
-                    'label' => $date->format('M Y'),
-                    'value' => BatchParticipant::query()
-                        ->where('status', 'lulus')
-                        ->whereYear('completed_at', $date->year)
-                        ->whereMonth('completed_at', $date->month)
-                        ->count(),
-                ];
-            })
-            ->push([
-                'label' => now()->format('M Y'),
-                'value' => BatchParticipant::query()
-                    ->where('status', 'lulus')
-                    ->whereYear('completed_at', now()->year)
-                    ->whereMonth('completed_at', now()->month)
-                    ->count(),
-            ])
-            ->all();
-    }
-
-    public function getRegionCompletionData(): array
-    {
-        return Employee::query()
-            ->leftJoin('batch_participants', 'batch_participants.employee_id', '=', 'employees.id')
-            ->selectRaw(implode(', ', [
-                'employees.region as region',
-                'COUNT(DISTINCT employees.id) as total_karyawan',
-                "COALESCE(SUM(CASE WHEN batch_participants.status = 'lulus' THEN 1 ELSE 0 END), 0) as completed_batch_participants",
-            ]))
-            ->whereNotNull('employees.region')
-            ->groupBy('employees.region')
-            ->orderBy('employees.region')
-            ->get()
-            ->map(function ($row): array {
-                $rate = $row->total_karyawan > 0
-                    ? round(($row->completed_batch_participants / $row->total_karyawan) * 100, 1)
-                    : 0;
-
-                return [
-                    'region' => $row->region,
-                    'total_karyawan' => (int) $row->total_karyawan,
-                    'completed_batch_participants' => (int) $row->completed_batch_participants,
-                    'rate' => $rate,
-                ];
-            })
-            ->all();
-    }
-
-    public function getCompetencyCompletionData(): array
-    {
-        return \App\Models\TrainingRecord::query()
-            ->selectRaw('competencies.name as competency_name, COUNT(*) as total_records, AVG(training_records.level_achieved) as avg_level')
-            ->join('competencies', 'training_records.competency_id', '=', 'competencies.id')
-            ->groupBy('competencies.name')
-            ->orderBy('total_records', 'desc')
-            ->limit(10)
-            ->get()
-            ->toArray();
-    }
-
-    public function getHAVScoreDistribution(): array
-    {
-        $distribution = \App\Models\Employee::query()
-            ->whereNotNull('hav_score')
-            ->selectRaw('
-                CASE 
-                    WHEN hav_score >= 9 THEN "High Performers (9-11)"
-                    WHEN hav_score >= 7 THEN "Strong Performers (7-8)"
-                    WHEN hav_score >= 5 THEN "Candidates (5-6)"
-                    ELSE "Developing (<5)"
-                END as category,
-                COUNT(*) as count
-            ')
-            ->groupBy('category')
-            ->orderByRaw('MIN(hav_score) DESC')
-            ->get()
-            ->toArray();
-
-        return $distribution;
-    }
-
-    protected function getTableQuery(): Builder
-    {
-        return Employee::query()
-            ->selectRaw(
-                implode(', ', [
-                    'employees.region as id',
-                    'employees.region as region',
-                    'COUNT(DISTINCT employees.area) as jumlah_area',
-                    'COUNT(DISTINCT employees.branch_id) as jumlah_cabang',
-                    'COUNT(DISTINCT employees.id) as jumlah_karyawan',
-                    "COALESCE(SUM(CASE WHEN batch_participants.status = 'lulus' THEN 1 ELSE 0 END), 0) as training_selesai",
-                ])
-            )
-            ->leftJoin('batch_participants', 'batch_participants.employee_id', '=', 'employees.id')
-            ->whereNotNull('employees.region')
-            ->groupBy('employees.region');
-    }
-
-    public function table(Table $table): Table
-    {
-        return $table
-            ->query($this->getTableQuery())
-
-            ->defaultSort('region', 'asc')
-            ->defaultKeySort(false)
-            ->columns([
-                TextColumn::make('region')->label('Region')->searchable()->sortable(),
-                TextColumn::make('jumlah_area')->label('Jumlah Area')->sortable(),
-                TextColumn::make('jumlah_cabang')->label('Jumlah Cabang')->sortable(),
-                TextColumn::make('jumlah_karyawan')->label('Jumlah Karyawan')->sortable(),
-                TextColumn::make('training_selesai')->label('training Selesai')->sortable(),
-                TextColumn::make('completion_pct')
-                    ->label('% Selesai')
-                    ->getStateUsing(fn ($record) => $record->jumlah_karyawan ? round(($record->training_selesai / $record->jumlah_karyawan) * 100,1) . '%' : '0%'),
-            ])
-            ->filters([
-                SelectFilter::make('region')
-                    ->label('Cari Region')
-                    ->options(fn () => Employee::query()->whereNotNull('region')->orderBy('region')->distinct()->pluck('region', 'region')->toArray())
-                    ->searchable(),
-            ])
-            ->recordActions([
-                Action::make('lihat')
-                    ->label('Lihat Region')
-                    ->url(fn ($record) => url('/admin/nasional/region/' . urlencode($record->region))),
-            ]);
-    }
 }
-
-
-
-

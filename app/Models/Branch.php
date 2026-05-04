@@ -11,6 +11,18 @@ class Branch extends Model
 {
     use HasUuids;
 
+    public const TYPE_LABELS = [
+        'VSP' => 'VSP (Vehicle & Service Part)',
+        'V' => 'V (Vehicle)',
+        'SP' => 'SP (Service Part)',
+        'PDC' => 'PDC (Pre-Delivery Center)',
+        'HO' => 'HO (Head Office)',
+        'GSO' => 'GSO (Government Sales Operation)',
+        'CAO' => 'CAO (Central Administration Office)',
+        'Fleet' => 'Fleet',
+        'BP' => 'BP (Body & Paint)',
+    ];
+
     protected $fillable = [
         'code',
         'name',

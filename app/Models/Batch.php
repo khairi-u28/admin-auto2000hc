@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Batch extends Model
@@ -70,6 +69,11 @@ class Batch extends Model
     public function feedback(): HasMany
     {
         return $this->hasMany(BatchFeedback::class);
+    }
+
+    public function trainers(): HasMany
+    {
+        return $this->hasMany(Employee::class, 'id', 'pic_id');
     }
 
     public function evaluationRelation(): HasMany

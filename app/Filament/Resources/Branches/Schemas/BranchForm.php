@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Branches\Schemas;
 
+use App\Models\Branch;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
@@ -35,11 +36,7 @@ class BranchForm
                     Select::make('type')
                         ->label('Tipe')
                         ->required()
-                        ->options([
-                            'GR' => 'GR (General Repair)',
-                            'BP' => 'BP (Body & Paint)',
-                            'HO' => 'HO (Head Office)',
-                        ]),
+                        ->options(Branch::TYPE_LABELS),
                 ]),
         ]);
     }

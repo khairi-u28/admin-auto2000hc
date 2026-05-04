@@ -1,27 +1,32 @@
 <?php
 
-namespace App\Filament\Resources\AreaResource\Pages;
+namespace App\Filament\Pages\MasterData;
 
-use App\Filament\Resources\AreaResource;
 use App\Models\Batch;
 use App\Models\BatchParticipant;
 use App\Models\Branch;
 use App\Models\Competency;
 use App\Models\Employee;
-use Filament\Actions\EditAction;
-use Filament\Resources\Pages\ViewRecord;
+use Filament\Pages\Page;
+use Illuminate\Support\Facades\DB;
 
-class ViewArea extends ViewRecord
+class AreaDetailPage extends Page
 {
-    protected static string $resource = AreaResource::class;
-    protected string $view = 'filament.resources.areas.view';
+    protected static bool $shouldRegisterNavigation = false;
+    protected string $view = 'filament.pages.master-data.area-detail';
+
+    public string $area = '';
+
+    public function mount(): void
+    {
+        $this->area = request('area', '');
+        if (!$this->area) abort(404);
+    }
 
     public function getViewData(): array
     {
-        $areaName = $this->record->nama_area;
-
         try {
-            $branches  = Branch::where('area', $areaName)
+            $branches  = Branch::where('area', $this->area)
                 ->withCount('employees')->get();
             $branchIds = $branches->pluck('id');
             $batchIds  = Batch::whereIn('branch_id',$branchIds)->pluck('id');
@@ -38,14 +43,10 @@ class ViewArea extends ViewRecord
                 ->where('status',['lulus','tidak_lulus'])->count();
             $kelulusanPct  = $totalEval>0
                 ? round($totalLulus/$totalEval*100,1):0;
-            
-            $abhName       = $this->record->nama_abh;
-            if (!$abhName) {
-                $abhName = Employee::whereHas('jobRole',
-                    fn($q)=>$q->where('code','ABH01'))
-                    ->where('area',$areaName)->value('full_name') ?? '-';
-            }
-            $region        = $this->record->region->nama_region ?? Branch::where('area',$areaName)->value('region') ?? '-';
+            $abhName       = Employee::whereHas('jobRole',
+                fn($q)=>$q->where('code','ABH01'))
+                ->where('area',$this->area)->value('full_name') ?? '-';
+            $region        = Branch::where('area',$this->area)->value('region') ?? '-';
 
             // Cabang breakdown with stats
             $cabangBreakdown = $branches->map(function($b) {
@@ -94,7 +95,7 @@ class ViewArea extends ViewRecord
                 ->orderByDesc('start_date')->limit(5)->get();
 
         } catch (\Exception $e) {
-            return ['area'=>$areaName,'totalKaryawan'=>0,'totalCabang'=>0,
+            return ['area'=>$this->area,'totalKaryawan'=>0,'totalCabang'=>0,
                 'activeBatch'=>0,'kelulusanPct'=>0,'abhName'=>'-','region'=>'-',
                 'cabangBreakdown'=>collect(),'topGaps'=>collect(),
                 'recentBatches'=>collect()];
@@ -102,13 +103,6 @@ class ViewArea extends ViewRecord
 
         return compact('totalKaryawan','totalCabang','activeBatch',
             'kelulusanPct','abhName','region','cabangBreakdown','topGaps',
-            'recentBatches') + ['area' => $areaName];
-    }
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            EditAction::make(),
-        ];
+            'recentBatches');
     }
 }
