@@ -25,7 +25,20 @@ class NasionalPage extends Page
 
     public function mount(): void
     {
-        $this->filterYear = Batch::max(DB::raw('YEAR(end_date)')) ?? now()->year;
+        // Try to get max year from batches, fallback to current year
+        $maxYear = Batch::max(DB::raw('YEAR(end_date)'));
+        
+        // If max year is found, use it. Otherwise use current year.
+        $this->filterYear = $maxYear ?? now()->year;
+        
+        // If there's no data for the current year but there is data in the past,
+        // use the latest year that actually has batches.
+        if (Batch::whereYear('end_date', $this->filterYear)->count() === 0) {
+            $latestWithData = Batch::orderByDesc('end_date')->first();
+            if ($latestWithData) {
+                $this->filterYear = $latestWithData->end_date->year;
+            }
+        }
     }
 
     public function updatedFilterYear(): void { $this->dispatch('$refresh'); }
