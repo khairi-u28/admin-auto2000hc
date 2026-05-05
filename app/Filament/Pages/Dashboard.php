@@ -39,8 +39,15 @@ class Dashboard extends BaseDashboard
                 ->groupBy('status')->pluck('count', 'status')->toArray();
 
             $recentBatches = Batch::with(['competency', 'branch'])
+                ->withCount(['participants as total_participants'])
+                ->withCount(['participants as lulus_participants' => fn($q) => $q->where('status', 'lulus')])
                 ->whereIn('status', ['open', 'berlangsung', 'selesai'])
-                ->orderByDesc('updated_at')->limit(5)->get();
+                ->orderByDesc('updated_at')->limit(5)->get()
+                ->map(function($batch) {
+                    $batch->kelulusan_pct = $batch->total_participants > 0 
+                        ? round($batch->lulus_participants / $batch->total_participants * 100) : 0;
+                    return $batch;
+                });
         } catch (\Exception $e) { /* tables not yet migrated */
         }
 

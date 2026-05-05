@@ -401,52 +401,54 @@
   </div>
 </div>
 
-{{-- ROW 5: FULL WIDTH — DETAIL WARNINGS --}}
-<div class="rpt-card">
-  <div class="rpt-title">Detail Early Warning</div>
-  <div class="rpt-grid grid-1-1" style="gap:16px">
-
-    <div>
-      <div style="font-size:10px;font-weight:500;
-       color:var(--color-text-secondary,#6b7280);margin-bottom:6px">
-        BATCH TERLAMBAT DISELESAIKAN</div>
+{{-- ROW 5: FULL WIDTH — TRAINER & DETAIL WARNINGS --}}
+<div class="rpt-grid grid-1-1" style="margin-bottom:12px">
+  {{-- Trainer List --}}
+  <div class="rpt-card">
+    <div class="rpt-title">Daftar Trainer Teraktif</div>
+    <div style="overflow-x:auto">
       <table class="rpt-table">
         <thead><tr>
-          <th>Kode Batch</th><th>Kompetensi</th>
-          <th>Tgl Selesai</th><th>Selisih</th>
+          <th>Nama Trainer</th><th>NRP</th>
+          <th>Cabang</th><th>Total Training</th>
         </tr></thead>
         <tbody>
-          @forelse($overdueBatches as $b)
-          @php $days = \Carbon\Carbon::parse($b->end_date)->diffInDays(now()) @endphp
+          @forelse($trainerData as $t)
           <tr>
-            <td style="font-weight:500">{{ $b->batch_code }}</td>
-            <td>{{ Str::limit($b->competency?->name??'-',20) }}</td>
-            <td>{{ \Carbon\Carbon::parse($b->end_date)->format('d/m/Y') }}</td>
-            <td><span class="pct-badge"
-              style="background:#FCEBEB;color:#A32D2D">
-              +{{ $days }} hr</span></td>
+            <td style="font-weight:500">{{ $t->nama_lengkap }}</td>
+            <td>{{ $t->nrp }}</td>
+            <td>
+              <div style="font-size:10px;font-weight:600">{{ $t->kode_cabang }}</div>
+              <div style="font-size:9px;color:var(--color-text-tertiary,#9ca3af)">{{ $t->branch_name }}</div>
+            </td>
+            <td>
+              <span class="pct-badge" style="background:#E6F1FB;color:#185FA5">
+                {{ $t->total_training }} Batch
+              </span>
+            </td>
           </tr>
           @empty
-          <tr><td colspan="4" style="text-align:center;
-            color:var(--color-text-secondary,#6b7280);padding:12px">
-            Tidak ada batch terlambat
+          <tr><td colspan="4" style="text-align:center;padding:16px;
+            color:var(--color-text-secondary,#6b7280)">
+            Tidak ada data trainer
           </td></tr>
           @endforelse
         </tbody>
       </table>
     </div>
+  </div>
 
-    <div>
-      <div style="font-size:10px;font-weight:500;
-       color:var(--color-text-secondary,#6b7280);margin-bottom:6px">
-        JABATAN DENGAN FULFILLMENT TERENDAH</div>
-      @foreach($lowFulfillRoles as $r)
+  {{-- Jabatan Terendah --}}
+  <div class="rpt-card">
+    <div class="rpt-title">Jabatan dengan Fulfillment Terendah</div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
+      @forelse($lowFulfillRoles as $r)
       @php
         $bc = $r['pct']>=70?'#639922':($r['pct']>=40?'#EF9F27':'#E24B4A');
       @endphp
       <div class="bar-row">
         <div class="bar-lbl" title="{{ $r['name'] }}">
-          {{ Str::limit($r['name'],18) }}</div>
+          {{ Str::limit($r['name'],22) }}</div>
         <div class="bar-track">
           <div style="height:100%;border-radius:3px;
            background:{{ $bc }};width:{{ $r['pct'] }}%"></div>
@@ -454,8 +456,41 @@
         <span style="font-size:10px;font-weight:500;width:30px;
          text-align:right;color:{{ $bc }}">{{ $r['pct'] }}%</span>
       </div>
-      @endforeach
+      @empty
+      <div style="text-align:center;padding:16px;color:var(--color-text-secondary,#6b7280)">
+        Tidak ada data jabatan
+      </div>
+      @endforelse
     </div>
   </div>
+</div>
+
+{{-- ROW 6: FULL WIDTH — DETAIL WARNINGS --}}
+<div class="rpt-card">
+  <div class="rpt-title">Detail Batch Terlambat (Overdue)</div>
+  <table class="rpt-table">
+    <thead><tr>
+      <th>Kode Batch</th><th>Kompetensi</th>
+      <th>Tgl Selesai</th><th>Selisih</th>
+    </tr></thead>
+    <tbody>
+      @forelse($overdueBatches as $b)
+      @php $days = \Carbon\Carbon::parse($b->end_date)->diffInDays(now()) @endphp
+      <tr>
+        <td style="font-weight:500">{{ $b->batch_code }}</td>
+        <td>{{ Str::limit($b->competency?->name??'-',30) }}</td>
+        <td>{{ \Carbon\Carbon::parse($b->end_date)->format('d/m/Y') }}</td>
+        <td><span class="pct-badge"
+          style="background:#FCEBEB;color:#A32D2D">
+          +{{ $days }} hr</span></td>
+      </tr>
+      @empty
+      <tr><td colspan="4" style="text-align:center;
+        color:var(--color-text-secondary,#6b7280);padding:12px">
+        Tidak ada batch terlambat
+      </td></tr>
+      @endforelse
+    </tbody>
+  </table>
 </div>
 </x-filament-panels::page>

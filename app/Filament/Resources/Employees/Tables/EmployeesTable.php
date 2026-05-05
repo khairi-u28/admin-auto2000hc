@@ -44,12 +44,22 @@ class EmployeesTable
                 TextColumn::make('area_label')
                     ->label('Area')
                     ->getStateUsing(fn ($record) => $record->branch?->areaRelation?->nama_area ?? $record->area)
-                    ->searchable()
+                    ->searchable(query: function ($query, string $search) {
+                        $query->where('area', 'like', "%{$search}%")
+                            ->orWhereHas('branch.areaRelation', function ($q) use ($search) {
+                                $q->where('nama_area', 'like', "%{$search}%");
+                            });
+                    })
                     ->sortable(),
                 TextColumn::make('region_label')
                     ->label('Region')
                     ->getStateUsing(fn ($record) => $record->branch?->regionRelation?->nama_region ?? $record->region)
-                    ->searchable()
+                    ->searchable(query: function ($query, string $search) {
+                        $query->where('region', 'like', "%{$search}%")
+                            ->orWhereHas('branch.regionRelation', function ($q) use ($search) {
+                                $q->where('nama_region', 'like', "%{$search}%");
+                            });
+                    })
                     ->sortable(),
                 TextColumn::make('masa_bakti')
                     ->label('Masa Bakti')

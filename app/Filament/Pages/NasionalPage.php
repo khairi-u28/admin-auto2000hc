@@ -25,7 +25,7 @@ class NasionalPage extends Page
 
     public function mount(): void
     {
-        $this->filterYear = now()->year;
+        $this->filterYear = Batch::max(DB::raw('YEAR(end_date)')) ?? now()->year;
     }
 
     public function updatedFilterYear(): void { $this->dispatch('$refresh'); }
@@ -53,7 +53,9 @@ class NasionalPage extends Page
     {
         try {
             $batchQ      = $this->buildBatchQuery();
-            $batchIds    = (clone $batchQ)->pluck('id');
+            $batchIds    = (clone $batchQ)->pluck('id')->toArray();
+            
+            // Stats
             $totalSelesai = (clone $batchQ)->where('status','selesai')->count();
             $totalPeserta = BatchParticipant::whereIn('batch_id', $batchIds)
                 ->distinct('employee_id')->count('employee_id');
@@ -101,6 +103,25 @@ class NasionalPage extends Page
                 ->whereIn('batches.id', $batchIds)
                 ->groupBy('branches.region')
                 ->orderBy('branches.region')
+                ->get();
+
+            // Trainer Table Data
+            $trainerData = DB::table('users')
+                ->leftJoin('employees', 'employees.user_id', '=', 'users.id')
+                ->leftJoin('branches', 'employees.branch_id', '=', 'branches.id')
+                ->join('batches', 'batches.pic_id', '=', 'users.id')
+                ->whereIn('batches.id', $batchIds)
+                ->select(
+                    'users.id as user_id',
+                    DB::raw('COALESCE(employees.nama_lengkap, users.name) as nama_lengkap'),
+                    DB::raw('COALESCE(employees.nrp, "-") as nrp'),
+                    DB::raw('COALESCE(branches.kode_cabang, "-") as kode_cabang'),
+                    DB::raw('COALESCE(branches.name, "HO") as branch_name')
+                )
+                ->selectRaw('COUNT(batches.id) as total_training')
+                ->groupBy('users.id', 'employees.nama_lengkap', 'users.name', 'employees.nrp', 'branches.kode_cabang', 'branches.name')
+                ->orderByDesc('total_training')
+                ->limit(10)
                 ->get();
 
             // Monthly trend (12 months of selected year)
@@ -184,26 +205,27 @@ class NasionalPage extends Page
             // Lowest fulfillment job roles
             $lowFulfillRoles = [];
             foreach (JobRole::withCount(['employees as ec' =>
-                fn($q) => $q->where('status','active')])
-                ->having('ec','>',0)->get() as $role) {
-                $empIds = Employee::where('job_role_id',$role->id)
+                fn($q) => $q->where('status', 'active')])
+                ->having('ec', '>', 0)->get() as $role) {
+                $empIds = Employee::where('job_role_id', $role->id)
                     ->pluck('id');
-                $lulus = BatchParticipant::whereIn('employee_id',$empIds)
-                    ->where('status','lulus')
+                $lulus = BatchParticipant::whereIn('employee_id', $empIds)
+                    ->where('status', 'lulus')
                     ->distinct('employee_id')->count('employee_id');
                 $pct = $empIds->count() > 0
                     ? round($lulus / $empIds->count() * 100) : 0;
                 $lowFulfillRoles[] = [
-                    'name'=>$role->name,'pct'=>$pct,'total'=>$empIds->count()
+                    'name' => $role->name, 'pct' => $pct, 'total' => $empIds->count()
                 ];
             }
-            usort($lowFulfillRoles, fn($a,$b) => $a['pct'] - $b['pct']);
+            usort($lowFulfillRoles, fn($a, $b) => $a['pct'] - $b['pct']);
             $lowFulfillRoles = array_slice($lowFulfillRoles, 0, 6);
 
             $regions = Branch::distinct()->whereNotNull('region')
                 ->pluck('region')->filter()->sort()->values();
 
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("NasionalPage Error: " . $e->getMessage());
             return $this->emptyNasionalData();
         }
 
@@ -212,7 +234,7 @@ class NasionalPage extends Page
             'kelulusanPct','avgTraining','avgTrainer','totalOverdue',
             'regionData','monthlyTrend','batchStatusCounts',
             'competencyAnalysis','heatmapData','overdueBatches',
-            'lowFulfillRoles','regions'
+            'lowFulfillRoles','regions','trainerData'
         );
     }
 
@@ -224,7 +246,7 @@ class NasionalPage extends Page
             'avgTrainer'=>0,'totalOverdue'=>0,'regionData'=>collect(),
             'monthlyTrend'=>collect(),'batchStatusCounts'=>[],
             'competencyAnalysis'=>[],'heatmapData'=>[],'overdueBatches'=>collect(),
-            'lowFulfillRoles'=>[],'regions'=>collect(),
+            'lowFulfillRoles'=>[],'regions'=>collect(),'trainerData'=>collect(),
         ];
     }
 }

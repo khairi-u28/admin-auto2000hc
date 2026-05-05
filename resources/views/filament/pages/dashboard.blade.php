@@ -113,6 +113,90 @@
   </div>
 </div>
 
+{{-- ROW 4: RECENT BATCHES + EARLY WARNING --}}
+<div class="db-grid db-grid-recent">
+
+  {{-- Recent Batches --}}
+  <div class="db-card">
+    <div class="db-card-title">Batch Terbaru</div>
+    <table class="mini-table">
+      <thead><tr>
+        <th>Batch</th><th>Kompetensi</th>
+        <th>Tipe</th><th>Status</th><th>Peserta</th><th>Lulus %</th>
+      </tr></thead>
+      <tbody>
+        @forelse($recentBatches as $batch)
+        @php
+          $sc = match($batch->status) {
+            'selesai'     =>'background:#EAF3DE;color:#3B6D11',
+            'berlangsung' =>'background:#FAEEDA;color:#854F0B',
+            'open'        =>'background:#E6F1FB;color:#185FA5',
+            'dibatalkan'  =>'background:#FCEBEB;color:#A32D2D',
+            default       =>'background:#F1EFE8;color:#5F5E5A',
+          };
+          $pCount = $batch->participants_count ?? 0;
+          $kpct = $batch->kelulusan_pct ?? 0;
+          $kc = $kpct >= 70 ? '#3B6D11' : ($kpct >= 50 ? '#854F0B' : '#A32D2D');
+          $kb = $kpct >= 70 ? '#EAF3DE' : ($kpct >= 50 ? '#FAEEDA' : '#FCEBEB');
+        @endphp
+        <tr>
+          <td style="font-weight:500">{{ $batch->batch_code }}</td>
+          <td>{{ Str::limit($batch->competency?->name ?? '-', 20) }}</td>
+          <td>
+            <span class="badge" style="background:{{ $batch->type==='HO'
+              ? '#EEEDFE' : '#E1F5EE' }};color:{{ $batch->type==='HO'
+              ? '#534AB7' : '#0F6E56' }}">{{ $batch->type }}</span>
+          </td>
+          <td><span class="badge" style="{{ $sc }}">
+            {{ ucfirst($batch->status) }}</span></td>
+          <td>{{ $batch->target_participants }}</td>
+          <td>
+            <span class="badge" style="background:{{ $kb }};color:{{ $kc }}">
+              {{ $kpct }}%
+            </span>
+          </td>
+        </tr>
+        @empty
+        <tr><td colspan="5" style="text-align:center;
+         color:var(--color-text-secondary,#6b7280);padding:16px">
+          Belum ada batch</td></tr>
+        @endforelse
+      </tbody>
+    </table>
+  </div>
+
+  {{-- Early Warning --}}
+  <div class="db-card">
+    <div class="db-card-title">⚑ Early Warning</div>
+    @forelse($warnings as $warn)
+    @php
+      $bg  = $warn['type']==='danger' ? '#FCEBEB' : '#FAEEDA';
+      $bdr = $warn['type']==='danger' ? '#F7C1C1' : '#FAC775';
+      $tc  = $warn['type']==='danger' ? '#A32D2D' : '#854F0B';
+      $dot = $warn['type']==='danger' ? '#E24B4A' : '#EF9F27';
+    @endphp
+    <div class="warn-box" style="background:{{ $bg }};
+     border:0.5px solid {{ $bdr }}">
+      <div style="width:8px;height:8px;border-radius:50%;
+       background:{{ $dot }};flex-shrink:0;margin-top:2px"></div>
+      <div>
+        <div class="warn-title" style="color:{{ $tc }}">
+          {{ $warn['count'] }} {{ $warn['label'] }}
+        </div>
+        <div class="warn-sub">{{ $warn['sub'] }}</div>
+      </div>
+    </div>
+    @empty
+    <div style="padding:20px 0;text-align:center">
+      <div style="font-size:24px;margin-bottom:6px">✓</div>
+      <div style="font-size:12px;color:var(--color-text-secondary,#6b7280)">
+        Semua indikator normal
+      </div>
+    </div>
+    @endforelse
+  </div>
+</div>
+
 {{-- ROW 2: BATCH DONUT + LP FULFILLMENT --}}
 <div class="db-grid db-grid-2-1" style="margin-bottom:12px">
 
@@ -127,7 +211,7 @@
       $totalBatches = array_sum($batchStatusCounts ?: [0]);
     @endphp
     <div style="display:flex;align-items:center;gap:16px">
-      <svg width="100" height="100" viewBox="0 0 100 100">
+      <svg width="200" height="200" viewBox="0 0 100 100">
         @php
           $offset = 0;
           $circumference = 2 * M_PI * 38;
@@ -237,79 +321,4 @@
   </div>
 </div>
 
-{{-- ROW 4: RECENT BATCHES + EARLY WARNING --}}
-<div class="db-grid db-grid-recent">
-
-  {{-- Recent Batches --}}
-  <div class="db-card">
-    <div class="db-card-title">Batch Terbaru</div>
-    <table class="mini-table">
-      <thead><tr>
-        <th>Batch</th><th>Kompetensi</th>
-        <th>Tipe</th><th>Status</th><th>Peserta</th>
-      </tr></thead>
-      <tbody>
-        @forelse($recentBatches as $batch)
-        @php
-          $sc = match($batch->status) {
-            'selesai'     =>'background:#EAF3DE;color:#3B6D11',
-            'berlangsung' =>'background:#FAEEDA;color:#854F0B',
-            'open'        =>'background:#E6F1FB;color:#185FA5',
-            'dibatalkan'  =>'background:#FCEBEB;color:#A32D2D',
-            default       =>'background:#F1EFE8;color:#5F5E5A',
-          };
-          $pCount = $batch->participants_count ?? 0;
-        @endphp
-        <tr>
-          <td style="font-weight:500">{{ $batch->batch_code }}</td>
-          <td>{{ Str::limit($batch->competency?->name ?? '-', 20) }}</td>
-          <td>
-            <span class="badge" style="background:{{ $batch->type==='HO'
-              ? '#EEEDFE' : '#E1F5EE' }};color:{{ $batch->type==='HO'
-              ? '#534AB7' : '#0F6E56' }}">{{ $batch->type }}</span>
-          </td>
-          <td><span class="badge" style="{{ $sc }}">
-            {{ ucfirst($batch->status) }}</span></td>
-          <td>{{ $batch->target_participants }}</td>
-        </tr>
-        @empty
-        <tr><td colspan="5" style="text-align:center;
-         color:var(--color-text-secondary,#6b7280);padding:16px">
-          Belum ada batch</td></tr>
-        @endforelse
-      </tbody>
-    </table>
-  </div>
-
-  {{-- Early Warning --}}
-  <div class="db-card">
-    <div class="db-card-title">⚑ Early Warning</div>
-    @forelse($warnings as $warn)
-    @php
-      $bg  = $warn['type']==='danger' ? '#FCEBEB' : '#FAEEDA';
-      $bdr = $warn['type']==='danger' ? '#F7C1C1' : '#FAC775';
-      $tc  = $warn['type']==='danger' ? '#A32D2D' : '#854F0B';
-      $dot = $warn['type']==='danger' ? '#E24B4A' : '#EF9F27';
-    @endphp
-    <div class="warn-box" style="background:{{ $bg }};
-     border:0.5px solid {{ $bdr }}">
-      <div style="width:8px;height:8px;border-radius:50%;
-       background:{{ $dot }};flex-shrink:0;margin-top:2px"></div>
-      <div>
-        <div class="warn-title" style="color:{{ $tc }}">
-          {{ $warn['count'] }} {{ $warn['label'] }}
-        </div>
-        <div class="warn-sub">{{ $warn['sub'] }}</div>
-      </div>
-    </div>
-    @empty
-    <div style="padding:20px 0;text-align:center">
-      <div style="font-size:24px;margin-bottom:6px">✓</div>
-      <div style="font-size:12px;color:var(--color-text-secondary,#6b7280)">
-        Semua indikator normal
-      </div>
-    </div>
-    @endforelse
-  </div>
-</div>
 </x-filament-panels::page>
