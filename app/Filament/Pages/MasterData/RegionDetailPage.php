@@ -92,8 +92,8 @@ class RegionDetailPage extends Page
                 ->whereIn('employees.id',$empIds)
                 ->where('employees.status','active')
                 ->groupBy('competencies.id','competencies.name')
-                ->having('total_emp','>',0)
-                ->orderByRaw('(total_emp - lulus_count) DESC')
+                ->havingRaw('COUNT(DISTINCT employees.id) > 0')
+                ->orderByRaw('(COUNT(DISTINCT employees.id) - COUNT(DISTINCT CASE WHEN batch_participants.status = "lulus" THEN batch_participants.employee_id END)) DESC')
                 ->limit(5)->get();
 
             // Recent batches

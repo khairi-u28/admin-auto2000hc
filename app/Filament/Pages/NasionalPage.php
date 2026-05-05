@@ -149,7 +149,7 @@ class NasionalPage extends Page
                 )
                 ->selectRaw('COUNT(batches.id) as total_training')
                 ->groupBy('users.id', 'employees.nama_lengkap', 'users.name', 'employees.nrp', 'branches.kode_cabang', 'branches.name')
-                ->orderByDesc('total_training')
+                ->orderByRaw('COUNT(batches.id) DESC')
                 ->limit(10)
                 ->get();
 

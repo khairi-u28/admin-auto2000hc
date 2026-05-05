@@ -114,6 +114,9 @@ class Dashboard extends BaseDashboard
                 ->where('employees.status', 'active')
                 ->where('learning_paths.status', 'published')
                 ->groupBy('competencies.id', 'competencies.name')
+                ->havingRaw('COUNT(DISTINCT employees.id) > 0')
+                ->orderByRaw('(COUNT(DISTINCT employees.id) - COUNT(DISTINCT CASE WHEN batch_participants.status = "lulus" THEN batch_participants.employee_id END)) DESC')
+                ->limit(8)
                 ->get()
                 ->map(fn($c) => [
                     'name'     => $c->name,
@@ -123,7 +126,7 @@ class Dashboard extends BaseDashboard
                     'gap_pct'  => $c->total_emp > 0
                         ? round(($c->total_emp - $c->lulus_count) / $c->total_emp * 100) : 0,
                 ])
-                ->sortByDesc('gap')->take(8)->values()->toArray();
+                ->values()->toArray();
         } catch (\Exception $e) {
         }
 
