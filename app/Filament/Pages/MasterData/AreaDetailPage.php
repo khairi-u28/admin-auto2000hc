@@ -40,7 +40,7 @@ class AreaDetailPage extends Page
             $totalLulus    = BatchParticipant::whereIn('batch_id',$batchIds)
                 ->where('status','lulus')->count();
             $totalEval     = BatchParticipant::whereIn('batch_id',$batchIds)
-                ->where('status',['lulus','tidak_lulus'])->count();
+                ->whereIn('status',['lulus','tidak_lulus'])->count();
             $kelulusanPct  = $totalEval>0
                 ? round($totalLulus/$totalEval*100,1):0;
             $abhName       = Employee::whereHas('jobRole',
