@@ -38,6 +38,28 @@ class DatabaseDiagnosticSeeder extends Seeder
             }
         }
 
+        $this->command->info('--- STATUS DISTRIBUTION ---');
+        $batchStatuses = Batch::select('status', DB::raw('COUNT(*) as count'))
+            ->groupBy('status')->get()->pluck('count', 'status')->toArray();
+        $this->command->info("Batch Statuses: " . json_encode($batchStatuses));
+
+        // Case Sensitivity Check
+        $selesaiLower = Batch::where('status', 'selesai')->count();
+        $selesaiUpper = Batch::where('status', 'SELESAI')->count();
+        $this->command->info("Batch 'status' query (selesai): {$selesaiLower}");
+        $this->command->info("Batch 'status' query (SELESAI): {$selesaiUpper}");
+        if ($selesaiLower != $selesaiUpper && ($selesaiLower == 0 || $selesaiUpper == 0)) {
+            $this->command->warn("POSSIBLE CASE SENSITIVITY ISSUE DETECTED!");
+        }
+
+        $empStatuses = Employee::select('status', DB::raw('COUNT(*) as count'))
+            ->groupBy('status')->get()->pluck('count', 'status')->toArray();
+        $this->command->info("Employee Statuses: " . json_encode($empStatuses));
+
+        $partStatuses = DB::table('batch_participants')->select('status', DB::raw('COUNT(*) as count'))
+            ->groupBy('status')->get()->pluck('count', 'status')->toArray();
+        $this->command->info("Participant Statuses: " . json_encode($partStatuses));
+
         $this->command->info('--- RELATIONSHIP CHECK ---');
 
         // Check if employees have job roles
