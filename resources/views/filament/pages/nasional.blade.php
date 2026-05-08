@@ -198,7 +198,7 @@
       $off = 0;
     @endphp
     <div style="display:flex;align-items:center;gap:12px">
-      <svg width="90" height="90" viewBox="0 0 90 90">
+      <svg width="160" height="160" viewBox="0 0 90 90">
         @foreach($btColors as $st => $col)
           @php
             $cnt=$batchStatusCounts[$st]??0;

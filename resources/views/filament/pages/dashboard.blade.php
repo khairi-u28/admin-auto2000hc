@@ -1,324 +1,678 @@
 <x-filament-panels::page>
-<style>
-.db-grid{display:grid;gap:12px}
-.db-grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
-.db-grid-2-1{grid-template-columns:5fr 7fr}
-.db-grid-1-1{grid-template-columns:repeat(2,minmax(0,1fr))}
-.db-grid-recent{grid-template-columns:7fr 5fr}
+  <style>
+    :root {
+      --hc-bg: #f8f9fb;
+      --hc-card: #ffffff;
+      --hc-border: #e8eaed;
+      --hc-text: #1a1d23;
+      --hc-muted: #6b7280;
+      --hc-accent: #2563eb;
+      --hc-green: #059669;
+      --hc-red: #dc2626;
+      --hc-amber: #d97706;
+      --hc-purple: #7c3aed
+    }
 
-@media (max-width: 1024px) {
-    .db-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .db-grid-2-1, .db-grid-recent { grid-template-columns: 1fr; }
-}
-@media (max-width: 640px) {
-    .db-grid-4, .db-grid-1-1 { grid-template-columns: 1fr; }
-    .bar-lbl { width: 80px; }
-}
-.db-card{background:var(--color-background-primary,#fff);border:0.5px solid
- var(--color-border-tertiary,#e5e7eb);border-radius:12px;padding:14px 16px}
-.db-card-title{font-size:11px;font-weight:500;color:var(--color-text-secondary,#6b7280);
- text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px}
-.kpi-val{font-size:22px;font-weight:500;line-height:1.1}
-.kpi-sub{font-size:11px;color:var(--color-text-secondary,#6b7280);margin-top:3px}
-.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.bar-lbl{font-size:11px;color:var(--color-text-secondary,#6b7280);
- width:120px;flex-shrink:0;text-align:right;white-space:nowrap;
- overflow:hidden;text-overflow:ellipsis}
-.bar-track{flex:1;background:var(--color-background-secondary,#f9fafb);
- border-radius:4px;height:9px;overflow:hidden}
-.bar-fill{height:100%;border-radius:4px}
-.leg-row{display:flex;align-items:center;gap:6px;font-size:11px;
- color:var(--color-text-primary,#111);margin-bottom:4px}
-.leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.leg-val{margin-left:auto;font-weight:500}
-.warn-box{border-radius:8px;padding:8px 10px;margin-bottom:6px;
- display:flex;gap:8px;align-items:flex-start}
-.warn-title{font-size:12px;font-weight:500;margin-bottom:1px}
-.warn-sub{font-size:10px;color:var(--color-text-secondary,#6b7280)}
-.mini-table{width:100%;border-collapse:collapse;font-size:11px}
-.mini-table th{font-size:10px;color:var(--color-text-secondary,#6b7280);
- padding:0 6px 6px;text-align:left;font-weight:500}
-.mini-table td{padding:6px;border-top:0.5px solid 
- var(--color-border-tertiary,#e5e7eb)}
-.badge{display:inline-block;padding:1px 8px;border-radius:20px;
- font-size:10px;font-weight:500}
-</style>
+    .hc-page {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px
+    }
 
-{{-- ROW 1: ORG STATS (4 cards) --}}
-<div class="db-grid db-grid-4" style="margin-bottom:12px">
+    .hc-section-head {
+      margin-bottom: 16px
+    }
 
-  {{-- Total Karyawan --}}
-  <div class="db-card">
-    <div class="db-card-title">Total Karyawan</div>
-    <div class="kpi-val" style="color:#185FA5">
-      {{ number_format($totalKaryawan) }}
-    </div>
-    <div class="kpi-sub">Aktif dari {{ number_format($totalKaryawanAll) }} total</div>
-    @php $inactivePct = $totalKaryawanAll > 0 
-        ? round(($totalKaryawanAll - $totalKaryawan) / $totalKaryawanAll * 100) : 0 @endphp
-    <div style="margin-top:8px;background:var(--color-background-secondary,#f9fafb);
-     border-radius:6px;height:6px;overflow:hidden">
-      <div style="height:100%;border-radius:6px;background:#185FA5;
-       width:{{ 100 - $inactivePct }}%"></div>
-    </div>
-    <div style="font-size:10px;color:var(--color-text-secondary,#6b7280);
-     margin-top:3px">{{ $inactivePct }}% tidak aktif</div>
-  </div>
+    .hc-section-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--hc-text);
+      letter-spacing: -0.2px
+    }
 
-  {{-- Region --}}
-  <div class="db-card">
-    <div class="db-card-title">Region</div>
-    <div class="kpi-val" style="color:#0F6E56">{{ $totalRegion }}</div>
-    <div class="kpi-sub">Wilayah operasional</div>
-    <div style="margin-top:10px;display:flex;flex-direction:column;gap:3px">
-      <div style="font-size:10px;color:var(--color-text-secondary,#6b7280)">
-        Mencakup {{ $totalArea }} area
-      </div>
-      <div style="font-size:10px;color:var(--color-text-secondary,#6b7280)">
-        & {{ $totalCabang }} cabang
-      </div>
-    </div>
-  </div>
+    .hc-section-sub {
+      font-size: 12px;
+      color: var(--hc-muted);
+      margin-top: 2px
+    }
 
-  {{-- Area --}}
-  <div class="db-card">
-    <div class="db-card-title">Area</div>
-    <div class="kpi-val" style="color:#534AB7">{{ $totalArea }}</div>
-    <div class="kpi-sub">Di bawah {{ $totalRegion }} region</div>
-    @php $avgCabang = $totalArea > 0 ? round($totalCabang / $totalArea, 1) : 0 @endphp
-    <div style="margin-top:10px;font-size:10px;
-     color:var(--color-text-secondary,#6b7280)">
-      Rata-rata {{ $avgCabang }} cabang/area
-    </div>
-  </div>
+    .hc-card {
+      background: var(--hc-card);
+      border: 1px solid var(--hc-border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      transition: box-shadow .2s
+    }
 
-  {{-- Cabang by Tipe --}}
-  <div class="db-card">
-    <div class="db-card-title">Cabang ({{ $totalCabang }})</div>
-    @foreach(['VSP'=>'#185FA5','V'=>'#0F6E56','SP'=>'#534AB7','BP'=>'#854F0B','HO'=>'#3B6D11'] as $tipe => $color)
-    @php $count = $cabangByTipe[$tipe] ?? 0 @endphp
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-      <span style="font-size:11px;width:24px;font-weight:500;
-       color:{{ $color }}">{{ $tipe }}</span>
-      <div style="flex:1;background:var(--color-background-secondary,#f9fafb);
-       border-radius:3px;height:7px;overflow:hidden">
-        <div style="height:100%;border-radius:3px;background:{{ $color }};
-         width:{{ $totalCabang > 0 ? round($count/$totalCabang*100) : 0 }}%">
-        </div>
-      </div>
-      <span style="font-size:11px;font-weight:500;width:28px;
-       text-align:right">{{ $count }}</span>
-    </div>
-    @endforeach
-  </div>
-</div>
+    .hc-card:hover {
+      box-shadow: 0 2px 12px rgba(0, 0, 0, .04)
+    }
 
-{{-- ROW 4: RECENT BATCHES + EARLY WARNING --}}
-<div class="db-grid db-grid-recent">
+    /* KPI Row */
+    .hc-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(180px, 1fr));
+      gap: 14px
+    }
 
-  {{-- Recent Batches --}}
-  <div class="db-card">
-    <div class="db-card-title">Batch Terbaru</div>
-    <table class="mini-table">
-      <thead><tr>
-        <th>Batch</th><th>Kompetensi</th>
-        <th>Tipe</th><th>Status</th><th>Peserta</th><th>Lulus %</th>
-      </tr></thead>
-      <tbody>
-        @forelse($recentBatches as $batch)
-        @php
-          $sc = match($batch->status) {
-            'selesai'     =>'background:#EAF3DE;color:#3B6D11',
-            'berlangsung' =>'background:#FAEEDA;color:#854F0B',
-            'open'        =>'background:#E6F1FB;color:#185FA5',
-            'dibatalkan'  =>'background:#FCEBEB;color:#A32D2D',
-            default       =>'background:#F1EFE8;color:#5F5E5A',
-          };
-          $pCount = $batch->participants_count ?? 0;
-          $kpct = $batch->kelulusan_pct ?? 0;
-          $kc = $kpct >= 70 ? '#3B6D11' : ($kpct >= 50 ? '#854F0B' : '#A32D2D');
-          $kb = $kpct >= 70 ? '#EAF3DE' : ($kpct >= 50 ? '#FAEEDA' : '#FCEBEB');
-        @endphp
-        <tr>
-          <td style="font-weight:500">{{ $batch->batch_code }}</td>
-          <td>{{ Str::limit($batch->competency?->name ?? '-', 20) }}</td>
-          <td>
-            <span class="badge" style="background:{{ $batch->type==='HO'
-              ? '#EEEDFE' : '#E1F5EE' }};color:{{ $batch->type==='HO'
-              ? '#534AB7' : '#0F6E56' }}">{{ $batch->type }}</span>
-          </td>
-          <td><span class="badge" style="{{ $sc }}">
-            {{ ucfirst($batch->status) }}</span></td>
-          <td>{{ $batch->target_participants }}</td>
-          <td>
-            <span class="badge" style="background:{{ $kb }};color:{{ $kc }}">
-              {{ $kpct }}%
-            </span>
-          </td>
-        </tr>
-        @empty
-        <tr><td colspan="5" style="text-align:center;
-         color:var(--color-text-secondary,#6b7280);padding:16px">
-          Belum ada batch</td></tr>
-        @endforelse
-      </tbody>
-    </table>
-  </div>
+    .number-and-growth {
+      margin: 4px 0;
+      display: flex;
+      flex-direction: row;
+      gap: 4px;
+      align-items: end;
+    }
 
-  {{-- Early Warning --}}
-  <div class="db-card">
-    <div class="db-card-title">⚑ Early Warning</div>
-    @forelse($warnings as $warn)
-    @php
-      $bg  = $warn['type']==='danger' ? '#FCEBEB' : '#FAEEDA';
-      $bdr = $warn['type']==='danger' ? '#F7C1C1' : '#FAC775';
-      $tc  = $warn['type']==='danger' ? '#A32D2D' : '#854F0B';
-      $dot = $warn['type']==='danger' ? '#E24B4A' : '#EF9F27';
-    @endphp
-    <div class="warn-box" style="background:{{ $bg }};
-     border:0.5px solid {{ $bdr }}">
-      <div style="width:8px;height:8px;border-radius:50%;
-       background:{{ $dot }};flex-shrink:0;margin-top:2px"></div>
-      <div>
-        <div class="warn-title" style="color:{{ $tc }}">
-          {{ $warn['count'] }} {{ $warn['label'] }}
-        </div>
-        <div class="warn-sub">{{ $warn['sub'] }}</div>
-      </div>
-    </div>
-    @empty
-    <div style="padding:20px 0;text-align:center">
-      <div style="font-size:24px;margin-bottom:6px">✓</div>
-      <div style="font-size:12px;color:var(--color-text-secondary,#6b7280)">
-        Semua indikator normal
-      </div>
-    </div>
-    @endforelse
-  </div>
-</div>
+    .hc-kpi {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      min-height: 110px;
+    }
 
-{{-- ROW 2: BATCH DONUT + LP FULFILLMENT --}}
-<div class="db-grid db-grid-2-1" style="margin-bottom:12px">
+    .hc-kpi-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
 
-  {{-- Batch Status Donut --}}
-  <div class="db-card">
-    <div class="db-card-title">Status Training</div>
-    @php
-      $batchColors = ['draft'=>'#B4B2A9','open'=>'#185FA5',
-        'berlangsung'=>'#EF9F27','selesai'=>'#639922','dibatalkan'=>'#E24B4A'];
-      $batchLabels = ['draft'=>'Draft','open'=>'Open',
-        'berlangsung'=>'Berlangsung','selesai'=>'Selesai','dibatalkan'=>'Dibatalkan'];
-      $totalBatches = array_sum($batchStatusCounts ?: [0]);
-    @endphp
-    <div style="display:flex;align-items:center;gap:16px">
-      <svg width="200" height="200" viewBox="0 0 100 100">
-        @php
-          $offset = 0;
-          $circumference = 2 * M_PI * 38;
-        @endphp
-        @foreach($batchColors as $status => $color)
-          @php
-            $count = $batchStatusCounts[$status] ?? 0;
-            $dash = $totalBatches > 0 
-              ? ($count / $totalBatches) * $circumference : 0;
-            $gap  = $circumference - $dash;
-          @endphp
-          <circle cx="50" cy="50" r="38" fill="none"
-            stroke="{{ $color }}" stroke-width="16"
-            stroke-dasharray="{{ round($dash,2) }} {{ round($gap,2) }}"
-            stroke-dashoffset="{{ round(-$offset, 2) }}"
-            transform="rotate(-90 50 50)"/>
-          @php $offset += $dash @endphp
-        @endforeach
-        <text x="50" y="46" text-anchor="middle" font-size="14"
-          font-weight="500" fill="var(--color-text-primary,#111)">
-          {{ $totalBatches }}
-        </text>
-        <text x="50" y="58" text-anchor="middle" font-size="9"
-          fill="var(--color-text-secondary,#6b7280)">total</text>
-      </svg>
-      <div style="flex:1">
-        @foreach($batchColors as $status => $color)
-        <div class="leg-row">
-          <div class="leg-dot" style="background:{{ $color }}"></div>
-          {{ $batchLabels[$status] }}
-          <span class="leg-val">{{ $batchStatusCounts[$status] ?? 0 }}</span>
-        </div>
-        @endforeach
-      </div>
-    </div>
-  </div>
+    .hc-kpi-content {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
 
-  {{-- Learning Path Fulfillment by Job Role --}}
-  <div class="db-card">
-    <div class="db-card-title">Fulfillment Learning Path per Jabatan</div>
-    @forelse($lpFulfillment as $item)
-    @php
-      $pct = $item['pct'];
-      $barColor = $pct >= 70 ? '#639922' : ($pct >= 40 ? '#EF9F27' : '#E24B4A');
-    @endphp
-    <div class="bar-row">
-      <div class="bar-lbl" title="{{ $item['name'] }}">{{ $item['name'] }}</div>
-      <div class="bar-track">
-        <div class="bar-fill" style="width:{{ $pct }}%;background:{{ $barColor }}">
-        </div>
-      </div>
-      <span style="font-size:11px;font-weight:500;width:34px;text-align:right;
-       color:{{ $barColor }}">{{ $pct }}%</span>
-    </div>
-    @empty
-    <p style="font-size:12px;color:var(--color-text-secondary,#6b7280);
-     padding:16px 0;text-align:center">
-      Data learning path belum tersedia
-    </p>
-    @endforelse
-  </div>
-</div>
+    .hc-kpi-val {
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.5px
+    }
 
-{{-- ROW 3: FULL WIDTH — TOP COMPETENCY GAPS --}}
-<div class="db-card" style="margin-bottom:12px">
-  <div class="db-card-title">Top Kompetensi dengan Gap Terbanyak</div>
-  <div class="db-grid db-grid-1-1" style="gap:12px">
-    @foreach(array_chunk($competencyGaps, 4) as $chunk)
+    .hc-kpi-label {
+      font-size: 11px;
+      color: var(--hc-muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 2px;
+    }
+
+    .hc-kpi-trend {
+      font-size: 11px;
+      margin-top: 6px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 8px;
+      border-radius: 20px
+    }
+
+    /* Insights Grid */
+    .hc-insights-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 2.2fr) minmax(340px, 0.8fr);
+      gap: 16px;
+      align-items: stretch
+    }
+
+    /* Heatmap */
+    .hc-hm-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch
+    }
+
+    .hc-hm {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 3px;
+      font-size: 12px
+    }
+
+    .hc-hm th {
+      padding: 7px 8px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--hc-muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      text-align: center;
+      white-space: nowrap
+    }
+
+    .hc-hm th:first-child {
+      text-align: left
+    }
+
+    .hc-hm td {
+      padding: 7px 8px;
+      text-align: center;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 12px;
+      min-width: 58px
+    }
+
+    .hc-hm td:first-child {
+      text-align: left;
+      font-weight: 500;
+      color: var(--hc-text);
+      background: transparent !important;
+      min-width: 100px;
+      white-space: nowrap
+    }
+
+    /* Chart */
+    .hc-chart-area {
+      position: relative;
+      height: 170px;
+      margin: 12px 0 4px
+    }
+
+    .hc-chart-svg {
+      width: 100%;
+      height: 100%
+    }
+
+    .hc-chart-legend {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 4px
+    }
+
+    .hc-chart-legend span {
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 5px
+    }
+
+    .hc-chart-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0
+    }
+
+    .hc-insight-note {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #065f46;
+      margin-top: 12px;
+      line-height: 1.5
+    }
+
+    /* Risk Cards */
+    .hc-risk-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px
+    }
+
+    .hc-risk {
+      border-radius: 14px;
+      padding: 14px 12px;
+      text-align: left;
+      min-height: 110px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between
+    }
+
+    .hc-risk-icon {
+      font-size: 16px;
+      margin-bottom: 6px
+    }
+
+    .hc-risk-val {
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1
+    }
+
+    .hc-risk-label {
+      font-size: 11px;
+      color: var(--hc-muted);
+      margin-top: 6px;
+      line-height: 1.3
+    }
+
+    /* Management Attention */
+    .hc-mgmt-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px
+    }
+
+    .hc-mgmt-grid .hc-card {
+      padding: 16px
+    }
+
+    .hc-mgmt-list {
+      list-style: none;
+      padding: 0;
+      margin: 0
+    }
+
+    .hc-mgmt-list li {
+      padding: 8px 10px;
+      border-radius: 10px;
+      margin-bottom: 5px;
+      font-size: 12.5px;
+      line-height: 1.5;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px
+    }
+
+    .hc-mgmt-list li::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 6px
+    }
+
+    .hc-mgmt-risk li {
+      background: #fef2f2;
+      color: #991b1b
+    }
+
+    .hc-mgmt-risk li::before {
+      background: #dc2626
+    }
+
+    .hc-mgmt-pos li {
+      background: #f0fdf4;
+      color: #166534
+    }
+
+    .hc-mgmt-pos li::before {
+      background: #059669
+    }
+
+    /* Responsive */
+    @media(max-width:1024px) {
+      .hc-kpi-grid {
+        grid-template-columns: repeat(3, 1fr)
+      }
+
+      .hc-insights-grid,
+      .hc-mgmt-grid {
+        grid-template-columns: 1fr
+      }
+
+      .hc-risk-grid {
+        grid-template-columns: repeat(3, 1fr)
+      }
+    }
+
+    @media(max-width:640px) {
+      .hc-kpi-grid {
+        grid-template-columns: 1fr
+      }
+
+      .hc-risk-grid {
+        grid-template-columns: 1fr
+      }
+
+      .hc-insights-grid,
+      .hc-mgmt-grid {
+        grid-template-columns: 1fr
+      }
+
+      .hc-card {
+        padding: 14px
+      }
+
+      .hc-chart-area {
+        height: 160px
+      }
+
+      .hc-kpi-val {
+        font-size: 22px
+      }
+
+      .hc-risk-val {
+        font-size: 20px
+      }
+    }
+
+    /* Dark mode support */
+    .dark .hc-card {
+      background: var(--color-background-primary, #1f2937);
+      border-color: var(--color-border-tertiary, #374151)
+    }
+
+    .dark .hc-section-title {
+      color: #f3f4f6
+    }
+
+    .dark .hc-hm td:first-child {
+      color: #e5e7eb
+    }
+
+    .dark .hc-insight-note {
+      background: #064e3b;
+      border-color: #065f46;
+      color: #a7f3d0
+    }
+
+    .dark .hc-mgmt-risk li {
+      background: #450a0a;
+      color: #fca5a5
+    }
+
+    .dark .hc-mgmt-pos li {
+      background: #052e16;
+      color: #86efac
+    }
+  </style>
+
+  <div class="hc-page">
+
+    {{-- ══════════════════════════════════════════════════════════════
+    SECTION 1 — ORGANIZATIONAL OVERVIEW
+    ══════════════════════════════════════════════════════════════ --}}
     <div>
-      @foreach($chunk as $comp)
-      @php
-        $supply = $comp['total'] > 0 
-          ? round($comp['lulus'] / $comp['total'] * 100) : 0;
-        $gapPct = 100 - $supply;
-      @endphp
-      <div style="margin-bottom:8px">
-        <div style="display:flex;justify-content:space-between;
-         margin-bottom:3px">
-          <span style="font-size:11px;color:var(--color-text-primary,#111)">
-            {{ Str::limit($comp['name'], 35) }}
-          </span>
-          <span style="font-size:10px;color:#A32D2D;font-weight:500">
-            {{ $comp['gap'] }} belum lulus
-          </span>
+      <div class="hc-section-head">
+        <div class="hc-section-title">Organizational Overview</div>
+        <div class="hc-section-sub">Kondisi utama organisasi saat ini</div>
+      </div>
+
+      <div class="hc-kpi-grid">
+        {{-- KPI 1: Total Karyawan Aktif --}}
+        <div class="hc-card hc-kpi">
+          <div class="hc-kpi-icon" style="background:#eff6ff;color:#2563eb">👥</div>
+          <div class="hc-kpi-content">
+              <div class="hc-kpi-label">Total Karyawan Aktif</div>
+              <div class="number-and-growth">
+                <div class="hc-kpi-val" style="color:#2563eb">{{ number_format($totalKaryawanAktif) }}</div>
+                <div class="hc-kpi-trend" style="background:#ecfdf5;color:#059669">+32 orang</div>
+              </div>
+              <div style="font-size:11px;color:#2b2b2b">vs tahun 2024</div>
+          </div>
         </div>
-        <div style="background:var(--color-background-secondary,#f9fafb);
-         border-radius:4px;height:8px;overflow:hidden;
-         display:flex">
-          <div style="height:100%;background:#185FA5;
-           width:{{ $supply }}%"></div>
-          <div style="height:100%;background:#FCEBEB;
-           width:{{ $gapPct }}%"></div>
+
+        {{-- KPI 2: Indeks Kapabilitas --}}
+        <div class="hc-card hc-kpi">
+          <div class="hc-kpi-icon" style="background:#f0fdf4;color:#059669">📊</div>
+          <div class="hc-kpi-content">
+              <div class="hc-kpi-label">Indeks Kapabilitas</div>
+              <div class="number-and-growth">
+                <div class="hc-kpi-val" style="color:#059669">{{ $capabilityIndex }}%</div>
+                <div class="hc-kpi-trend" style="font-weight:bold;background:#ecfdf5;color:#059669">+5.1%</div>
+              </div>
+              <div style="font-size:11px;color:#2b2b2b">vs tahun 2024</div>
+          </div>
         </div>
-        <div style="display:flex;justify-content:space-between;
-         margin-top:2px">
-          <span style="font-size:9px;color:#185FA5">
-            {{ $supply }}% lulus
-          </span>
-          <span style="font-size:9px;color:#A32D2D">
-            {{ $gapPct }}% gap
-          </span>
+
+        {{-- KPI 3: Rata-rata KPI --}}
+        <div class="hc-card hc-kpi">
+          <div class="hc-kpi-icon" style="background:#fefce8;color:#d97706">🎯</div>
+          <div class="hc-kpi-content">
+              <div class="hc-kpi-label">Rata-rata KPI</div>
+              <div class="number-and-growth">
+                <div class="hc-kpi-val" style="color:#d97706">{{ $avgKpi }}%</div>
+                <small class="hc-kpi-trend" style="font-weight:bold;background:#ecfdf5;color:#059669">+2.8%</small>
+                <!-- <small style="font-weight:bold;color:#059669">↑ +2.8%</small> -->
+              </div>
+              <div style="font-size:11px;color:#2b2b2b">vs tahun 2024</div>
+          </div>
+        </div>
+
+        {{-- KPI 4: Siap Promosi --}}
+        <div class="hc-card hc-kpi">
+          <div class="hc-kpi-icon" style="background:#faf5ff;color:#7c3aed">🚀</div>
+          <div class="hc-kpi-content">
+              <div class="hc-kpi-label">Karyawan Eligible</div>
+              <div class="number-and-growth">
+                <!-- <div class="hc-kpi-val" style="color:#7c3aed">{{ $promosiSiap }}%</div> -->
+                <div class="hc-kpi-val" style="color:#7c3aed">76%</div>
+                <!-- <div class="hc-kpi-trend" style="background:#faf5ff;color:#7c3aed">{{ $promosiCount }} orang</div> -->
+                 <small class="hc-kpi-trend" style="font-weight:bold;background:#fee2e2;color:#991b1b">-12.5%</small>
+              </div>
+              <div style="font-size:11px;color:#2b2b2b">vs tahun 2024</div>
+          </div>
+        </div>
+
+        {{-- KPI 5: Budaya Perusahaan --}}
+        <!-- <div class="hc-card hc-kpi">
+          <div class="hc-kpi-icon" style="background:#fdf2f8;color:#db2777">💡</div>
+          <div class="hc-kpi-content">
+              <div class="hc-kpi-label">Budaya Perusahaan</div>
+              <div class="hc-kpi-val" style="color:#db2777">{{ $budayaIndex }}%</div>
+              <div class="hc-kpi-trend" style="background:#ecfdf5;color:#059669">↑ stabil</div>
+          </div>
+        </div> -->
+      </div>
+    </div>
+
+    {{-- ══════════════════════════════════════════════════════════════
+    SECTION 2 — WORKFORCE CAPABILITY INSIGHTS
+    ══════════════════════════════════════════════════════════════ --}}
+    <div>
+      <div class="hc-section-head">
+        <div class="hc-section-title">Workforce Capability Insights</div>
+        <div class="hc-section-sub">Kapabilitas organisasi & dampaknya terhadap kinerja</div>
+      </div>
+
+      <div class="hc-insights-grid">
+        {{-- LEFT: Heatmap --}}
+        <div class="hc-card">
+          <div style="font-size:13px;font-weight:600;color:var(--hc-text);margin-bottom:4px">Peta Kapabilitas</div>
+          <div style="font-size:11px;color:var(--hc-muted);margin-bottom:14px">Rata-rata Fulfillment per Kompetensi
+          </div>
+          <div class="hc-hm-wrap">
+            <table class="hc-hm">
+              <thead>
+                <tr>
+                  <th>Departemen / Kompetensi</th>
+                  @foreach($heatmapCompetencies as $comp)
+                    <th title="{{ $comp }}">{{ \Illuminate\Support\Str::limit($comp, 12) }}</th>
+                  @endforeach
+                </tr>
+              </thead>
+              <tbody>
+                @foreach($heatmapData as $row)
+                  <tr>
+                    <td>{{ $row['dept'] }}</td>
+                    @foreach($row['cells'] as $cell)
+                      @php
+                        $pct = $cell['pct'] ?? 0;
+                        if ($pct === null) {
+                          $bg = '#f3f4f6';
+                          $fg = '#9ca3af';
+                        } elseif ($pct >= 70) {
+                          $bg = '#dcfce7';
+                          $fg = '#166534';
+                        } elseif ($pct >= 45) {
+                          $bg = '#fef9c3';
+                          $fg = '#854d0e';
+                        } else {
+                          $bg = '#fee2e2';
+                          $fg = '#991b1b';
+                        }
+                      @endphp
+                      <td style="background:{{ $bg }};color:{{ $fg }}">{{ $pct !== null ? $pct . '%' : '-' }}</td>
+                    @endforeach
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {{-- RIGHT: Line Chart --}}
+        <div class="hc-card">
+          <div style="font-size:13px;font-weight:600;color:var(--hc-text);margin-bottom:4px">Korelasi Learning vs KPI
+          </div>
+          <div style="font-size:11px;color:var(--hc-muted);margin-bottom:8px">Tingkat penyelesaian learning vs
+            pencapaian KPI</div>
+
+          @php
+            $months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'];
+            $maxVal = 100;
+            $chartW = 100;
+            $chartH = 200;
+            $padL = 30;
+            $padB = 24;
+            $padT = 10;
+            $padR = 10;
+            $plotW = $chartW - $padL - $padR; // percentages not used, using viewBox
+            $vbW = 400;
+            $vbH = 180;
+            $pL = 40;
+            $pR = 20;
+            $pT = 15;
+            $pB = 30;
+            $areaW = $vbW - $pL - $pR;
+            $areaH = $vbH - $pT - $pB;
+            $stepX = count($learningVsKpi) > 1 ? $areaW / (count($learningVsKpi) - 1) : $areaW;
+          @endphp
+
+          <div class="hc-chart-area">
+            <svg class="hc-chart-svg" viewBox="0 0 {{ $vbW }} {{ $vbH }}" preserveAspectRatio="none">
+              {{-- Grid lines --}}
+              @for($i = 0; $i <= 4; $i++)
+                @php $y = $pT + ($areaH / 4) * $i;
+                $label = 100 - ($i * 25); @endphp
+                <line x1="{{ $pL }}" y1="{{ $y }}" x2="{{ $vbW - $pR }}" y2="{{ $y }}" stroke="#e5e7eb" stroke-width="0.5"
+                  stroke-dasharray="4" />
+                <text x="{{ $pL - 6 }}" y="{{ $y + 3 }}" text-anchor="end" font-size="9"
+                  fill="#9ca3af">{{ $label }}</text>
+              @endfor
+
+              {{-- Month labels --}}
+              @foreach($learningVsKpi as $idx => $d)
+                @php $x = $pL + $idx * $stepX; @endphp
+                <text x="{{ $x }}" y="{{ $vbH - 6 }}" text-anchor="middle" font-size="9"
+                  fill="#9ca3af">{{ $months[$idx] ?? '' }}</text>
+              @endforeach
+
+              {{-- Learning line --}}
+              @php
+                $lPoints = [];
+                $kPoints = [];
+                foreach ($learningVsKpi as $idx => $d) {
+                  $x = $pL + $idx * $stepX;
+                  $lY = $pT + $areaH - ($d['learning'] / $maxVal * $areaH);
+                  $kY = $pT + $areaH - ($d['kpi'] / $maxVal * $areaH);
+                  $lPoints[] = round($x, 1) . ',' . round($lY, 1);
+                  $kPoints[] = round($x, 1) . ',' . round($kY, 1);
+                }
+              @endphp
+              <polyline points="{{ implode(' ', $lPoints) }}" fill="none" stroke="#2563eb" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round" />
+              <polyline points="{{ implode(' ', $kPoints) }}" fill="none" stroke="#059669" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round" />
+
+              {{-- Dots --}}
+              @foreach($learningVsKpi as $idx => $d)
+                @php
+                  $x = $pL + $idx * $stepX;
+                  $lY = $pT + $areaH - ($d['learning'] / $maxVal * $areaH);
+                  $kY = $pT + $areaH - ($d['kpi'] / $maxVal * $areaH);
+                @endphp
+                <circle cx="{{ round($x, 1) }}" cy="{{ round($lY, 1) }}" r="3" fill="#2563eb" />
+                <circle cx="{{ round($x, 1) }}" cy="{{ round($kY, 1) }}" r="3" fill="#059669" />
+              @endforeach
+            </svg>
+          </div>
+
+          <div class="hc-chart-legend">
+            <span><span class="hc-chart-dot" style="background:#2563eb"></span> Penyelesaian Learning (%)</span>
+            <span><span class="hc-chart-dot" style="background:#059669"></span> Pencapaian KPI (%)</span>
+          </div>
+
+          <div class="hc-insight-note">
+            ✅ Terdapat korelasi positif antara penyelesaian learning dan pencapaian KPI.
+          </div>
         </div>
       </div>
-      @endforeach
     </div>
-    @endforeach
-  </div>
-</div>
 
+    {{-- ══════════════════════════════════════════════════════════════
+    SECTION 3 — INDIKATOR RISIKO
+    ══════════════════════════════════════════════════════════════ --}}
+    <div>
+      <div class="hc-section-head">
+        <div class="hc-section-title">Indikator Risiko</div>
+        <div class="hc-section-sub">Area yang memerlukan perhatian segera</div>
+      </div>
+
+      <div class="hc-risk-grid">
+        @php
+          $risks = [
+            ['icon' => '⚠️', 'val' => $riskKompetensiKritis, 'label' => 'Kompetensi Kritis Rendah', 'sub' => 'karyawan tanpa sertifikasi', 'bg' => '#fef2f2', 'fg' => '#dc2626'],
+            ['icon' => '📉', 'val' => $riskKpiBawahTarget, 'label' => 'KPI di Bawah Target', 'sub' => 'karyawan di bawah standar', 'bg' => '#fffbeb', 'fg' => '#d97706'],
+            ['icon' => '⏰', 'val' => $riskLpOverdue, 'label' => 'Learning Path Overdue', 'sub' => 'program terlambat', 'bg' => '#fef2f2', 'fg' => '#dc2626'],
+            ['icon' => '💤', 'val' => $riskEngagementRendah, 'label' => 'Engagement Rendah', 'sub' => 'tanpa aktivitas 90 hari', 'bg' => '#fefce8', 'fg' => '#d97706'],
+            ['icon' => '🔗', 'val' => $riskKolaborasiRendah, 'label' => 'Eligible Rate Rendah', 'sub' => 'competency fulfillment <30%', 'bg' => '#faf5ff', 'fg' => '#7c3aed'],
+          ];
+        @endphp
+
+        @foreach($risks as $risk)
+          <div class="hc-card hc-risk" style="background:{{ $risk['bg'] }}">
+            <div class="hc-risk-icon">{{ $risk['icon'] }}</div>
+            <div class="hc-risk-val" style="color:{{ $risk['fg'] }}">{{ $risk['val'] }}</div>
+            <div class="hc-risk-label" style="font-weight:bold">{{ $risk['label'] }}</div>
+            <div style="font-size:10px;color:var(--hc-muted);margin-top:4px">{{ $risk['sub'] }}</div>
+          </div>
+        @endforeach
+      </div>
+    </div>
+
+    {{-- ══════════════════════════════════════════════════════════════
+    SECTION 4 — MANAGEMENT ATTENTION
+    ══════════════════════════════════════════════════════════════ --}}
+    <div>
+      <div class="hc-section-head">
+        <div class="hc-section-title">Management Attention</div>
+        <div class="hc-section-sub">Ringkasan hal penting untuk pengambilan keputusan</div>
+      </div>
+
+      <div class="hc-mgmt-grid">
+        {{-- Left: Prioritas Risiko --}}
+        <div class="hc-card">
+          <div
+            style="font-size:13px;font-weight:600;color:#dc2626;margin-bottom:12px;display:flex;align-items:center;gap:6px">
+            <span style="font-size:16px">🔴</span> Prioritas Risiko
+          </div>
+          <ul class="hc-mgmt-list hc-mgmt-risk">
+            @foreach($prioritasRisiko as $item)
+              <li>{{ $item }}</li>
+            @endforeach
+          </ul>
+        </div>
+
+        {{-- Right: Hal Positif --}}
+        <div class="hc-card">
+          <div
+            style="font-size:13px;font-weight:600;color:#059669;margin-bottom:12px;display:flex;align-items:center;gap:6px">
+            <span style="font-size:16px">🟢</span>Insight
+          </div>
+          <ul class="hc-mgmt-list hc-mgmt-pos">
+            @foreach($halPositif as $item)
+              <li>{{ $item }}</li>
+            @endforeach
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </x-filament-panels::page>
